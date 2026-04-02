@@ -187,14 +187,35 @@
     }
     .current-row {
       display: grid;
-      grid-template-columns: 50px 1fr 30px 70px;
+      grid-template-columns: 28px 50px 1fr 30px 70px;
       gap: 8px;
       padding: 6px 0;
       border-bottom: 1px solid #222;
       color: #f5c825;
+      align-items: center;
     }
     .current-row:last-child { border-bottom: none; }
     .current-row .status { font-size: 11px; }
+    .row-vis-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #f5c825;
+      color: #111;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      line-height: 24px;
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .row-vis-btn.hidden {
+      background: #2a2a2a;
+      color: #555;
+      border-color: #333;
+    }
     .status-on { color: #4ade80; }
     .status-delayed { color: #fbbf24; }
     .status-boarding { color: #60a5fa; }
@@ -354,16 +375,6 @@
     </select>
   </div>
 
-  <div class="setting-row">
-    <span class="setting-label">Visible rows</span>
-    <div class="phase-toggles" id="rowToggles" style="margin:0;">
-      <button class="phase-btn active" data-row="0">1</button>
-      <button class="phase-btn active" data-row="1">2</button>
-      <button class="phase-btn active" data-row="2">3</button>
-      <button class="phase-btn active" data-row="3">4</button>
-    </div>
-  </div>
-
   <h2>Phonics Phases</h2>
   <div class="phase-toggles" id="phaseToggles">
     <button class="phase-btn active" data-phase="phase2">2</button>
@@ -408,6 +419,7 @@
     let customQueue = [];
     let muted = false;
     let refreshOnChange = false;
+    let visibleRows = [true, true, true, true];
 
     const STATUS_COLORS = {
       'ON TIME': 'status-on',
@@ -486,15 +498,28 @@
         return;
       }
       el.innerHTML = '<div class="current-board">' +
-        currentDepartures.map(d => `
-          <div class="current-row">
+        currentDepartures.map((d, i) => {
+          const vis = visibleRows[i] !== false;
+          return `
+          <div class="current-row" style="${vis ? '' : 'opacity:0.35;'}">
+            <button class="row-vis-btn ${vis ? '' : 'hidden'}" data-row="${i}">${i + 1}</button>
             <span>${d.time}</span>
             <span>${d.destination}</span>
             <span>${d.platform}</span>
             <span class="status ${STATUS_COLORS[d.status] || ''}">${d.status}</span>
-          </div>
-        `).join('') +
+          </div>`;
+        }).join('') +
         '</div>';
+
+      // Bind visibility toggle clicks
+      el.querySelectorAll('.row-vis-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.row);
+          visibleRows[idx] = !visibleRows[idx];
+          renderCurrentBoard();
+          pushSettings();
+        });
+      });
     }
 
     // --- Sync settings from display ---
@@ -521,9 +546,8 @@
         updateCustomStatusOptions();
       }
       if (s.visibleRows) {
-        document.querySelectorAll('#rowToggles .phase-btn').forEach((btn, i) => {
-          btn.classList.toggle('active', s.visibleRows[i]);
-        });
+        visibleRows = [...s.visibleRows];
+        renderCurrentBoard();
       }
       if (s.activePhases) {
         document.querySelectorAll('#phaseToggles .phase-btn').forEach(btn => {
@@ -555,10 +579,6 @@
       const activePhases = [];
       document.querySelectorAll('#phaseToggles .phase-btn.active').forEach(b => {
         activePhases.push(b.dataset.phase);
-      });
-      const visibleRows = [];
-      document.querySelectorAll('#rowToggles .phase-btn').forEach(b => {
-        visibleRows.push(b.classList.contains('active'));
       });
       const secBtn = document.getElementById('btnSeconds');
       return {
@@ -642,14 +662,6 @@
       document.getElementById('autoRefreshVal').textContent = e.target.value == 0 ? 'Off' : e.target.value;
     });
     document.getElementById('autoRefresh').addEventListener('change', pushSettings);
-
-    // Row visibility toggles
-    document.getElementById('rowToggles').addEventListener('click', (e) => {
-      const btn = e.target.closest('.phase-btn');
-      if (!btn) return;
-      btn.classList.toggle('active');
-      pushSettings();
-    });
 
     // Phase toggles
     document.getElementById('phaseToggles').addEventListener('click', (e) => {
