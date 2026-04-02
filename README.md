@@ -47,19 +47,23 @@ The Pi auto-starts the server and opens the display in Chromium kiosk mode on bo
 
 - **New Departures** — random phonics-aware departures
 - **Custom departure** — type your own destination, time, platform
-- **Settings** — clock format (12h/24h), seconds, letter case (CAPS/Title), max word length (3-7), digraph frequency, suffix frequency, auto-refresh interval, max platform number
-- **Digraph toggles** — enable/disable sh, ch, th, oo, ee individually
+- **Settings** — clock format (12h/24h), seconds, letter case (CAPS/Title), suffix frequency, auto-refresh interval, max platform number, refresh-on-change toggle
+- **Phase toggles** — enable/disable phonics phases 2, 3, 4, 5a, 5b, 6a, 6b, 6c independently
+- **Digraph toggles** — enable/disable all 14 Phase 3 digraphs individually (ch, sh, th, ng, ai, ee, oa, oo, ar, or, ur, ow, oi, er)
+- **Trigraph toggles** — enable/disable all 4 Phase 3 trigraphs individually (igh, air, ear, ure)
 
 ## Phonics design
 
-All destinations are strictly decodable at Phase 3/4 pink level:
+The word bank contains ~240 words across 8 groups aligned to the UK Letters and Sounds curriculum (Phases 2-6). All words are strictly decodable at or before their stated phase level. No silent letters, no exception words, no irregular pronunciations.
 
-- No silent letters (no "Thame", no "Vale", no "Gate")
-- No exception words or irregular pronunciations
-- No function words as destinations
-- Words sound plausible as UK station names
+**Phase 2:** Simple CVC words (PIT, DEN, HILL, BECK)
+**Phase 3:** Digraph/trigraph words (MARSH, CHURCH, MOON, HIGH)
+**Phase 4:** Consonant cluster words (GLEN, FROST, SPRING, STREAM)
+**Phase 5a:** Split digraphs and new vowel spellings (LAKE, STONE, GROVE, DUNE)
+**Phase 5b:** Alternative pronunciations (BRIDGE, KNOLL, WILD, GRANGE)
+**Phase 6a-c:** Two-syllable, compound, and multi-syllabic words (MEADOW, MOONBEAM, WHISPERING)
 
-Word types: CVC core words (PEN, HULL, DOG), digraph words used sparingly (SHAW, BATH, POOL), compound names with decodable suffixes (DOG TOWN, ASH HALT). Casing toggles between ALL CAPS and Title Case for lowercase letter recognition.
+Parents toggle phases on/off to match the child's current level. Individual digraph and trigraph toggles provide fine-grained control over which sounds appear. Suffixes (TOWN, HALT, PARK, etc.) are added to single-syllable words only. Casing toggles between ALL CAPS and Title Case for lowercase letter recognition.
 
 ## Deployment
 

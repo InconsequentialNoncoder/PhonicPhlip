@@ -4,7 +4,7 @@ This document captures the design decisions, constraints, and development histor
 
 ## Origin
 
-PhonicPhlip is a fork of [FlipOff](https://github.com/magnum6actual/flipoff), a split-flap display emulator. The original is a general-purpose message board. This fork repurposes it as a train departure board designed to teach phonics to a reception-aged child (4-5 years old, UK curriculum Phase 3/4 pink level).
+PhonicPhlip is a fork of [FlipOff](https://github.com/magnum6actual/flipoff), a split-flap display emulator. The original is a general-purpose message board. This fork repurposes it as a train departure board designed to teach phonics to a child progressing through the UK Letters and Sounds curriculum (Phases 2-6, Reception through Year 2).
 
 The project was prototyped in a claude.ai conversation, then ported into Claude Code for proper version control and deployment. All code was written collaboratively between the project owner (Lawrence Deju-Wiseman) and Claude, with Lawrence directing design decisions and testing on real devices while Claude handled implementation.
 
@@ -39,23 +39,47 @@ We initially deployed static files to GitHub Pages, but it can't run WebSocket s
 
 ## Phonics constraints — critical for any fork
 
-Every destination word must be **strictly decodable** at Phase 3/4 level. This is the core educational requirement and must not be relaxed. Specifically:
+Every destination word must be **strictly decodable** at or before its stated phase level. This is the core educational requirement and must not be relaxed. Specifically:
 
-- **No silent letters.** "Thame" has a silent E that changes the A sound. "Vale" has a magic E. "Gate" has a magic E. None of these are decodable at this level.
+- **No silent letters.** "Thame" has a silent E that changes the A sound. "Vale" has a magic E. "Gate" has a magic E. None of these are decodable at early phases.
 - **No exception words.** "Said", "the", "was" — words that don't follow phonics rules. These are taught separately by rote and must not appear as destinations.
-- **No irregular pronunciations.** "Cough", "though", "through" — same letter pattern, different sounds. A Phase 3/4 reader can't decode these.
+- **No irregular pronunciations.** "Cough", "though", "through" — same letter pattern, different sounds.
 - **No function words.** "This", "That", "With", "Then" — even if decodable, they don't work as station names.
-- **Words must sound like plausible station names.** Real UK places preferred where they fit (HULL, BATH, SHAW). Invented names acceptable if they sound right (DOG TOWN, ASH HALT).
+- **Words must sound like plausible station names.** Real UK places preferred where they fit. Invented names acceptable if they sound right.
 
-The word bank in `config.js` is curated by hand. Any additions must pass all five constraints. Known issue: BEEK in the ee digraph list is not a real word or place and should be replaced (BEECH has a silent letter so doesn't qualify).
+### Phase-gated word bank
 
-### Digraph handling
+The word bank in `config.js` is structured into 8 groups aligned to the UK Letters and Sounds curriculum. Words were sourced from a detailed phonics curriculum analysis document and used verbatim (~240 words total):
 
-Digraph words (containing sh, ch, th, oo, ee) are used sparingly — default 25% of departures. Each digraph can be toggled individually from the control page. This lets a parent match the display to exactly which digraphs the child is currently learning.
+| Group | Phase | Description | Examples |
+|-------|-------|-------------|----------|
+| phase2 | Phase 2 | CVC with single-letter GPCs only | PIT, DEN, BOG, HILL, BECK |
+| phase3 | Phase 3 | Digraphs and trigraphs | MARSH, CHURCH, MOON, HIGH, FAIR |
+| phase4 | Phase 4 | Consonant clusters, no new GPCs | GLEN, FROST, CLIFF, SPRING, STREAM |
+| phase5a | Phase 5a | Split digraphs + new vowel spellings | LAKE, STONE, GROVE, DUNE, BLAZE |
+| phase5b | Phase 5b | Alternative pronunciations | BRIDGE, KNOLL, WILD, GOLD, GRANGE |
+| phase6a | Phase 6 | Two-syllable words | HOLLOW, MEADOW, BEACON, CHAPEL |
+| phase6b | Phase 6 | Compound two-syllable words | HILLTOP, MOONBEAM, BLACKTHORN |
+| phase6c | Phase 6 | Multi-syllabic affixed words | WATERFALL, WHISPERING, NIGHTINGALE |
+
+Each phase can be toggled independently from the control page. Default: Phases 2, 3, 4 active.
+
+### Digraph and trigraph filtering
+
+All 14 Phase 3 digraphs (ch, sh, th, ng, ai, ee, oa, oo, ar, or, ur, ow, oi, er) and 4 trigraphs (igh, air, ear, ure) have individual toggles on the control page. These filter words across ALL phases, not just Phase 3. The logic:
+
+- If a word contains no digraphs/trigraphs, it always passes
+- If a word contains a digraph/trigraph, it's blocked unless that pattern is toggled on
+- Trigraphs are checked before digraphs to avoid false partial matches (e.g. FAIR contains "air" as a trigraph, not "ai" as a digraph)
+- Words with multiple patterns must have ALL their patterns active (e.g. MARSH contains "ar" and "sh" — both must be on)
+
+This lets a parent disable specific sounds the child hasn't learned yet, even in higher-phase words.
 
 ### Suffix handling
 
-About 40% of departures get a second word (suffix): TOWN, STOP, HALT, PARK, etc. All suffixes are themselves decodable. The combined name must fit within the destination tile count. Suffixes are all real components of UK place names.
+About 40% of departures get a second word (suffix): TOWN, STOP, HALT, PARK, etc. All suffixes are themselves decodable. The combined name must fit within the destination tile count (13 characters). Suffixes are all real components of UK place names.
+
+Suffixes are only applied to single-syllable words (Phases 2-5). Multi-syllable words from Phases 6a/6b/6c stand alone — "WATERFALL TOWN" doesn't work as a station name, and compound words in Phase 6b already contain two elements.
 
 ## Layout decisions
 
@@ -98,20 +122,19 @@ All settings are controlled from the phone and sent to the display via `update_s
 | clockFormat | 12, 24 | 24 | Clock display format |
 | showSeconds | bool | false | Show seconds on clock |
 | titleCase | bool | false | false=ALL CAPS, true=Title Case |
-| maxWordLength | 3-7 | 5 | Maximum base word length |
-| digraphFrequency | 0-1 | 0.25 | Proportion of digraph words |
 | suffixChance | 0-1 | 0.4 | Chance of adding suffix word |
-| activeDigraphs | array | [sh,ch,th,oo,ee] | Which digraphs are enabled |
+| activeDigraphs | array | all 14 | Which digraphs filter words |
+| activeTrigraphs | array | all 4 | Which trigraphs filter words |
+| activePhases | array | [phase2,phase3,phase4] | Which curriculum phases are enabled |
 | autoRefreshSeconds | 0-120 | 0 | Auto-refresh interval (0=off) |
 | maxPlatform | 1-99 | 10 | Maximum platform number |
 
 ## Known issues and future work
 
-- BEEK in the ee digraph list needs replacing (not a real word or place)
-- Word bank may contain words that don't sound like plausible station names — ongoing curation
 - Quiz mode (planned): missing letter in destination, child says the word
 - Real-time clock-relative departures: times that advance through the day
 - The control page is a single self-contained HTML file with inline CSS/JS — this was a deliberate choice for simplicity but makes it harder to maintain as it grows
+- Some Phase 3 words contain multiple digraphs (e.g. CHURCH has ch + ur, MARSH has ar + sh) — disabling either pattern blocks the word, which may be surprising to a parent who only intended to disable one sound
 
 ## Development environment
 
