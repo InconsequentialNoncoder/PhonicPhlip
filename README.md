@@ -14,7 +14,7 @@ A phone control page lets you generate new departures, enter custom destinations
 
 ### Hosted version (easiest)
 
-Open [phonic-phlip.lawrencedejuwiseman.workers.dev](https://phonic-phlip.lawrencedejuwiseman.workers.dev) on any device. Open [/control](https://phonic-phlip.lawrencedejuwiseman.workers.dev/control) on your phone to control it. WebSocket relay connects the two pages automatically.
+Open [phonic-phlip.inconsequentialnoncoder.workers.dev](https://phonic-phlip.inconsequentialnoncoder.workers.dev) on any device. Open [/control](https://phonic-phlip.inconsequentialnoncoder.workers.dev/control) on your phone to control it. WebSocket relay connects the two pages automatically.
 
 ### Local server (for development or Pi)
 
