@@ -1,4 +1,4 @@
-import { PHASE_WORDS, SUFFIXES, STATUSES, DEFAULT_SETTINGS, MAX_DEST_CHARS, NO_SUFFIX_PHASES, DIGRAPH_PATTERNS, TRIGRAPH_PATTERNS } from './config.js';
+import { PHASE_WORDS, SUFFIXES, STATUSES, TRAIN_TYPES, DEFAULT_SETTINGS, MAX_DEST_CHARS, NO_SUFFIX_PHASES, DIGRAPH_PATTERNS, TRIGRAPH_PATTERNS } from './config.js';
 
 export class WordBank {
   constructor() {
@@ -10,20 +10,23 @@ export class WordBank {
   }
 
   // Generate a random departure
-  generateDeparture(usedPlatforms) {
+  generateDeparture(usedPlatforms, usedTypes) {
     const destination = this._buildDestination();
     const time = this._randomTime();
     const platform = this._randomPlatform(usedPlatforms);
-    const status = this._pickStatus();
-    return { time, destination, platform, status: status.text, statusColor: status.color };
+    const statusInfo = this.settings.statusMode === 'type'
+      ? this._pickType(usedTypes)
+      : this._pickStatus();
+    return { time, destination, platform, status: statusInfo.text, statusColor: statusInfo.color };
   }
 
   // Generate a full board of departures
   generateBoard(count = 4) {
     const usedPlatforms = new Set();
+    const usedTypes = new Set();
     const departures = [];
     for (let i = 0; i < count; i++) {
-      departures.push(this.generateDeparture(usedPlatforms));
+      departures.push(this.generateDeparture(usedPlatforms, usedTypes));
     }
     departures.sort((a, b) => {
       const [ah, am] = a.time.split(':').map(Number);
@@ -138,6 +141,17 @@ export class WordBank {
     // All platforms used — fall back to random
     const num = 1 + Math.floor(Math.random() * max);
     return String(num).padStart(2, ' ');
+  }
+
+  _pickType(usedTypes) {
+    if (usedTypes && usedTypes.size < TRAIN_TYPES.length) {
+      const available = TRAIN_TYPES.filter(t => !usedTypes.has(t.text));
+      const pick = available[Math.floor(Math.random() * available.length)];
+      usedTypes.add(pick.text);
+      return pick;
+    }
+    const pick = TRAIN_TYPES[Math.floor(Math.random() * TRAIN_TYPES.length)];
+    return pick;
   }
 
   _pickStatus() {
