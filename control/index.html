@@ -281,6 +281,11 @@
     </div>
   </div>
 
+  <div class="setting-row">
+    <span class="setting-label">Refresh on change</span>
+    <button class="btn btn-secondary" id="btnRefreshOnChange" style="padding:8px 16px;font-size:13px;">Off</button>
+  </div>
+
   <h2>Phonics Phases</h2>
   <div class="phase-toggles" id="phaseToggles">
     <button class="phase-btn active" data-phase="phase2">2</button>
@@ -307,6 +312,7 @@
     let currentDepartures = [];
     let customQueue = [];
     let muted = false;
+    let refreshOnChange = false;
 
     const STATUS_COLORS = {
       'ON TIME': 'status-on',
@@ -429,6 +435,9 @@
 
     function pushSettings() {
       send({ type: 'update_settings', settings: gatherSettings() });
+      if (refreshOnChange) {
+        send({ type: 'refresh' });
+      }
     }
 
     // --- Event listeners ---
@@ -441,6 +450,14 @@
       muted = !muted;
       document.getElementById('btnMute').classList.toggle('muted', muted);
       send({ type: 'update_settings', settings: { muted } });
+    });
+
+    document.getElementById('btnRefreshOnChange').addEventListener('click', () => {
+      refreshOnChange = !refreshOnChange;
+      const btn = document.getElementById('btnRefreshOnChange');
+      btn.textContent = refreshOnChange ? 'On' : 'Off';
+      btn.classList.toggle('btn-primary', refreshOnChange);
+      btn.classList.toggle('btn-secondary', !refreshOnChange);
     });
 
     // Settings changes
