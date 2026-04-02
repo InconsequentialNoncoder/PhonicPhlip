@@ -191,3 +191,78 @@ html, body {
 .connection-indicator.connected {
   background: #22c55e;
 }
+
+/* --- Mobile layout --- */
+@media (max-width: 768px) {
+  #board-container {
+    padding: 2vh 3vw;
+    gap: 3vh;
+  }
+
+  /* Smaller clock */
+  .clock-digit {
+    width: 14vw;
+    height: 17vw;
+  }
+
+  .clock-digit-face span {
+    font-size: 11vw;
+  }
+
+  .clock-colon {
+    font-size: 9vw;
+    margin: 0 1vw;
+  }
+
+  .clock-section {
+    gap: 1.5vw;
+    margin-bottom: 2vh;
+  }
+
+  /* Only show first 2 departure rows */
+  .departure-row:nth-child(n+3) {
+    display: none;
+  }
+
+  /* Larger tiles for readability */
+  .dep-cell .tile {
+    width: 6vw;
+    height: 10vw;
+  }
+
+  .dep-cell .tile-front span,
+  .dep-cell .tile-back span {
+    font-size: 5.5vw;
+  }
+
+  .dep-plat .tile {
+    width: 7vw;
+    height: 10vw;
+  }
+
+  .dep-plat .tile-front span,
+  .dep-plat .tile-back span {
+    font-size: 6vw;
+  }
+
+  /* Tighter cell spacing on mobile */
+  .dep-time {
+    padding-right: 2vw;
+  }
+
+  .dep-dest {
+    padding-right: 1.5vw;
+  }
+
+  .dep-plat {
+    padding-right: 2vw;
+  }
+
+  .tile-row {
+    gap: 1px;
+  }
+
+  .departures-body {
+    gap: 2vh;
+  }
+}
