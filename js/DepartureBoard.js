@@ -134,6 +134,8 @@ export class DepartureBoard {
     const timeCell = document.createElement('div');
     timeCell.className = 'dep-cell dep-time';
     const timeRow = new TileRow(5, timeCell);
+    timeRow.setStatic([2]); // colon never animates
+    timeRow.tiles[2].setChar(':');
     rowEl.appendChild(timeCell);
 
     // Destination column

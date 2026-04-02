@@ -23,6 +23,13 @@ export class TileRow {
     this.el = wrapper;
   }
 
+  // Mark specific tile positions as static (no animation)
+  setStatic(indices) {
+    for (const i of indices) {
+      if (i < this.count) this.tiles[i].isStatic = true;
+    }
+  }
+
   // Set text with animation — casing preserved as-is from caller
   setText(text, baseDelay = 0) {
     const padded = text.padEnd(this.count, ' ').substring(0, this.count);
@@ -31,8 +38,12 @@ export class TileRow {
     for (let i = 0; i < this.count; i++) {
       const newChar = padded[i];
       if (newChar !== this.tiles[i].currentChar) {
-        const delay = baseDelay + i * STAGGER_DELAY;
-        this.tiles[i].scrambleTo(newChar, delay);
+        if (this.tiles[i].isStatic) {
+          this.tiles[i].setChar(newChar);
+        } else {
+          const delay = baseDelay + i * STAGGER_DELAY;
+          this.tiles[i].scrambleTo(newChar, delay);
+        }
         hasChanges = true;
       }
     }
