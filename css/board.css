@@ -1,119 +1,199 @@
-/* Board Container */
-.board {
-  --tile-size: clamp(36px, 4.2vw, 62px);
-  --tile-gap: clamp(3px, 0.3vw, 5px);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  position: relative;
-  background: #1A1A1A;
-  border-radius: 16px;
-  padding: 28px 48px 40px;
+html, body {
   width: 100%;
-  box-shadow:
-    0 -4px 20px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  background: #111;
   overflow: hidden;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-/* Tile Grid */
-.tile-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-cols, 22), var(--tile-size));
-  grid-template-rows: repeat(var(--grid-rows, 5), var(--tile-size));
-  gap: var(--tile-gap);
-  justify-content: center;
-}
-
-/* Accent Squares — small stacked blocks in top corners */
-.accent-bar {
-  position: absolute;
-  top: 30px;
+#board-container {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  z-index: 5;
+  justify-content: center;
+  align-items: center;
+  padding: 2vh 3vw;
+  gap: 2vh;
 }
 
-.accent-bar-left {
-  left: 18px;
-}
-
-.accent-bar-right {
-  right: 18px;
-}
-
-.accent-segment {
-  width: 14px;
-  height: 14px;
-  border-radius: 2px;
-  transition: background-color 0.5s ease;
-}
-
-/* Keyboard Shortcut Indicator */
-.keyboard-hint {
-  position: absolute;
-  bottom: 12px;
-  left: 16px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+/* --- Clock Section --- */
+.clock-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.35);
-  cursor: pointer;
-  transition: background 0.2s;
+  gap: 0.8vw;
+  margin-bottom: 1vh;
 }
 
-.keyboard-hint:hover {
-  background: rgba(255, 255, 255, 0.15);
+.clock-tile-wrapper {
+  display: inline-block;
 }
 
-/* Shortcuts Overlay */
-.shortcuts-overlay {
-  display: none;
-  position: absolute;
-  bottom: 48px;
-  left: 16px;
-  background: rgba(0, 0, 0, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  z-index: 10;
-  min-width: 180px;
+.clock-digit {
+  width: clamp(60px, 8vw, 140px);
+  height: clamp(80px, 10vw, 180px);
+  background: #1a1a1a;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
 }
 
-.shortcuts-overlay.visible {
-  display: block;
-}
-
-.shortcuts-overlay div {
+.clock-digit-face {
+  width: 100%;
+  height: 100%;
+  background: #222;
+  border-radius: 5px;
   display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.02);
 }
 
-.shortcuts-overlay kbd {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-family: inherit;
-  font-size: 11px;
-  margin-left: 16px;
-}
-
-/* Scroll indicator at bottom of board */
-.board::after {
+/* Horizontal split line on clock digits */
+.clock-digit-face::after {
   content: '';
   position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.15);
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.clock-digit-face span {
+  font-size: clamp(48px, 6.5vw, 120px);
+  font-weight: 700;
+  color: #f5c825;
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1;
+}
+
+.clock-colon {
+  font-size: clamp(40px, 5.5vw, 100px);
+  font-weight: 700;
+  color: #f5c825;
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1;
+  margin: 0 0.3vw;
+}
+
+.clock-flipping .clock-digit-face {
+  animation: clockFlip 0.3s ease-in-out;
+}
+
+@keyframes clockFlip {
+  0% { transform: perspective(300px) rotateX(0deg); }
+  50% { transform: perspective(300px) rotateX(-10deg); }
+  100% { transform: perspective(300px) rotateX(0deg); }
+}
+
+/* --- Departures Header --- */
+.departures-header {
+  display: grid;
+  grid-template-columns: 5fr 12fr 1.5fr 7fr;
+  gap: 3vw;
+  width: 94%;
+  max-width: 1600px;
+  padding: 0.8vh 1vw;
+  border-bottom: 2px solid #333;
+}
+
+.departures-header span {
+  font-size: clamp(11px, 1.2vw, 18px);
+  font-weight: 500;
+  color: #666;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* --- Departures Body --- */
+.departures-body {
+  width: 94%;
+  max-width: 1600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+}
+
+/* --- Departure Row --- */
+.departure-row {
+  display: grid;
+  grid-template-columns: 5fr 12fr 1.5fr 7fr;
+  gap: 3vw;
+  align-items: center;
+  padding: 0.5vh 1vw;
+  border-bottom: 1px solid #1f1f1f;
+  transition: opacity 0.5s;
+}
+
+/* --- Tile Row (within cells) --- */
+.tile-row {
+  display: flex;
+  gap: clamp(2px, 0.25vw, 4px);
+}
+
+/* --- Departure cell tiles — override tile sizes --- */
+.dep-cell .tile {
+  width: clamp(28px, 3.5vw, 56px);
+  height: clamp(36px, 4.5vw, 72px);
+}
+
+.dep-cell .tile-front span,
+.dep-cell .tile-back span {
+  font-size: clamp(20px, 2.5vw, 44px);
+  color: #f5c825;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Platform tile — slightly larger for emphasis */
+.dep-plat .tile {
+  width: clamp(36px, 4vw, 64px);
+  height: clamp(36px, 4.5vw, 72px);
+}
+
+.dep-plat .tile-front span,
+.dep-plat .tile-back span {
+  font-size: clamp(24px, 3vw, 50px);
+  color: #fff;
+}
+
+/* Status cell */
+.dep-status {
+  display: flex;
+  align-items: center;
+}
+
+/* --- Departures label --- */
+.board-label {
+  font-size: clamp(10px, 1vw, 14px);
+  color: #444;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* --- Connection indicator --- */
+.connection-indicator {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  transition: background 0.3s;
+}
+
+.connection-indicator.connected {
+  background: #22c55e;
 }

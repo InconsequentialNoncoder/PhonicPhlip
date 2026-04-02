@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Board Control</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #111;
+      color: #eee;
+      min-height: 100vh;
+      padding: 16px;
+      padding-bottom: 100px;
+    }
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f5c825;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+    h2 {
+      font-size: 14px;
+      font-weight: 500;
+      color: #888;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      margin-top: 24px;
+    }
+    .conn-status {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .conn-status.ok { background: #22c55e; }
+
+    /* Big action buttons */
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      flex: 1;
+      padding: 16px 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: #f5c825;
+      color: #111;
+    }
+    .btn-secondary {
+      background: #2a2a2a;
+      color: #eee;
+      border: 1px solid #333;
+    }
+    .btn-mute {
+      background: #2a2a2a;
+      color: #eee;
+      border: 1px solid #333;
+    }
+    .btn-mute.muted {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+    }
+
+    /* Settings section */
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #222;
+    }
+    .setting-label {
+      font-size: 14px;
+      color: #ccc;
+    }
+    .setting-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f5c825;
+      min-width: 40px;
+      text-align: right;
+    }
+    input[type="range"] {
+      width: 120px;
+      accent-color: #f5c825;
+    }
+    select {
+      background: #2a2a2a;
+      color: #eee;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    /* Digraph toggles */
+    .digraph-toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+    }
+    .digraph-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #2a2a2a;
+      color: #888;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .digraph-btn.active {
+      background: #f5c825;
+      color: #111;
+      border-color: #f5c825;
+    }
+
+    /* Custom departure form */
+    .custom-form {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .form-row label {
+      font-size: 13px;
+      color: #888;
+      min-width: 50px;
+    }
+    .form-row input, .form-row select {
+      flex: 1;
+      background: #222;
+      color: #f5c825;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 16px;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+    }
+    .form-row input::placeholder {
+      color: #444;
+      text-transform: none;
+    }
+    .form-row input:focus, .form-row select:focus {
+      outline: none;
+      border-color: #f5c825;
+    }
+
+    /* Current board display */
+    .current-board {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+    .current-row {
+      display: grid;
+      grid-template-columns: 50px 1fr 30px 70px;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #222;
+      color: #f5c825;
+    }
+    .current-row:last-child { border-bottom: none; }
+    .current-row .status { font-size: 11px; }
+    .status-on { color: #4ade80; }
+    .status-delayed { color: #fbbf24; }
+    .status-boarding { color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <h1><span class="conn-status" id="connDot"></span> Board Control</h1>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="btnRefresh">New Departures</button>
+    <button class="btn btn-mute" id="btnMute">Sound</button>
+  </div>
+
+  <div id="currentBoard"></div>
+
+  <h2>Custom departure</h2>
+  <div class="custom-form">
+    <div class="form-row">
+      <label>Time</label>
+      <input type="text" id="customTime" placeholder="09:15" maxlength="5" inputmode="numeric">
+    </div>
+    <div class="form-row">
+      <label>Dest</label>
+      <input type="text" id="customDest" placeholder="Dog Town" maxlength="12">
+    </div>
+    <div class="form-row">
+      <label>Plat</label>
+      <input type="text" id="customPlat" placeholder="2" maxlength="1" inputmode="numeric">
+    </div>
+    <div class="form-row">
+      <label>Status</label>
+      <select id="customStatus">
+        <option value="ON TIME">ON TIME</option>
+        <option value="DELAYED">DELAYED</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-secondary" id="btnAddCustom">Add to board</button>
+      <button class="btn btn-secondary" id="btnSendCustom">Replace board</button>
+    </div>
+  </div>
+
+  <h2>Settings</h2>
+
+  <div class="setting-row">
+    <span class="setting-label">Clock format</span>
+    <select id="clockFormat">
+      <option value="24">24 hour</option>
+      <option value="12">12 hour</option>
+    </select>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">Show seconds</span>
+    <button class="btn btn-secondary" id="btnSeconds" style="padding:8px 16px;font-size:13px;">Off</button>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">Letter case</span>
+    <select id="titleCase">
+      <option value="false">ALL CAPS</option>
+      <option value="true">Title Case</option>
+    </select>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">Station suffixes</span>
+    <select id="suffixChance">
+      <option value="0">None</option>
+      <option value="0.4" selected>Sometimes</option>
+      <option value="0.8">Often</option>
+    </select>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">Max word length</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="range" id="maxWordLength" min="3" max="7" value="5">
+      <span class="setting-value" id="maxWordLengthVal">5</span>
+    </div>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">Digraph frequency</span>
+    <select id="digraphFreq">
+      <option value="0">None</option>
+      <option value="0.25" selected>Occasional</option>
+      <option value="0.5">Frequent</option>
+    </select>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">Auto-refresh (sec)</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="range" id="autoRefresh" min="0" max="120" value="0" step="5">
+      <span class="setting-value" id="autoRefreshVal">Off</span>
+    </div>
+  </div>
+
+  <h2>Active digraphs</h2>
+  <div class="digraph-toggles" id="digraphToggles">
+    <button class="digraph-btn active" data-digraph="sh">sh</button>
+    <button class="digraph-btn active" data-digraph="ch">ch</button>
+    <button class="digraph-btn active" data-digraph="th">th</button>
+    <button class="digraph-btn active" data-digraph="oo">oo</button>
+    <button class="digraph-btn active" data-digraph="ee">ee</button>
+  </div>
+
+  <script>
+    let ws = null;
+    let currentDepartures = [];
+    let customQueue = [];
+    let muted = false;
+
+    const STATUS_COLORS = {
+      'ON TIME': 'status-on',
+      'DELAYED': 'status-delayed',
+    };
+
+    // --- WebSocket ---
+    function connect() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}/ws`);
+
+      ws.onopen = () => {
+        document.getElementById('connDot').classList.add('ok');
+        send({ type: 'request_state' });
+      };
+
+      ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          if (msg.type === 'board_state') {
+            currentDepartures = msg.departures || [];
+            renderCurrentBoard();
+            if (msg.settings) syncSettings(msg.settings);
+          }
+        } catch (err) {}
+      };
+
+      ws.onclose = () => {
+        document.getElementById('connDot').classList.remove('ok');
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = () => ws.close();
+    }
+
+    function send(msg) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg));
+      }
+    }
+
+    // --- Render current board state ---
+    function renderCurrentBoard() {
+      const el = document.getElementById('currentBoard');
+      if (!currentDepartures.length) {
+        el.innerHTML = '';
+        return;
+      }
+      el.innerHTML = '<div class="current-board">' +
+        currentDepartures.map(d => `
+          <div class="current-row">
+            <span>${d.time}</span>
+            <span>${d.destination}</span>
+            <span>${d.platform}</span>
+            <span class="status ${STATUS_COLORS[d.status] || ''}">${d.status}</span>
+          </div>
+        `).join('') +
+        '</div>';
+    }
+
+    // --- Sync settings from display ---
+    function syncSettings(s) {
+      if (s.clockFormat) document.getElementById('clockFormat').value = s.clockFormat;
+      if (s.showSeconds !== undefined) {
+        const btn = document.getElementById('btnSeconds');
+        btn.textContent = s.showSeconds ? 'On' : 'Off';
+        btn.classList.toggle('btn-primary', s.showSeconds);
+        btn.classList.toggle('btn-secondary', !s.showSeconds);
+      }
+      if (s.titleCase !== undefined) {
+        document.getElementById('titleCase').value = String(s.titleCase);
+      }
+      if (s.suffixChance !== undefined) {
+        document.getElementById('suffixChance').value = s.suffixChance;
+      }
+      if (s.maxWordLength) {
+        document.getElementById('maxWordLength').value = s.maxWordLength;
+        document.getElementById('maxWordLengthVal').textContent = s.maxWordLength;
+      }
+      if (s.digraphFrequency !== undefined) {
+        document.getElementById('digraphFreq').value = s.digraphFrequency;
+      }
+      if (s.autoRefreshSeconds !== undefined) {
+        document.getElementById('autoRefresh').value = s.autoRefreshSeconds;
+        document.getElementById('autoRefreshVal').textContent = s.autoRefreshSeconds || 'Off';
+      }
+      if (s.activeDigraphs) {
+        document.querySelectorAll('.digraph-btn').forEach(btn => {
+          btn.classList.toggle('active', s.activeDigraphs.includes(btn.dataset.digraph));
+        });
+      }
+    }
+
+    // --- Gather current settings ---
+    function gatherSettings() {
+      const activeDigraphs = [];
+      document.querySelectorAll('.digraph-btn.active').forEach(b => {
+        activeDigraphs.push(b.dataset.digraph);
+      });
+      const secBtn = document.getElementById('btnSeconds');
+      return {
+        clockFormat: parseInt(document.getElementById('clockFormat').value),
+        showSeconds: secBtn.textContent === 'On',
+        titleCase: document.getElementById('titleCase').value === 'true',
+        suffixChance: parseFloat(document.getElementById('suffixChance').value),
+        maxWordLength: parseInt(document.getElementById('maxWordLength').value),
+        digraphFrequency: parseFloat(document.getElementById('digraphFreq').value),
+        autoRefreshSeconds: parseInt(document.getElementById('autoRefresh').value),
+        activeDigraphs,
+      };
+    }
+
+    function pushSettings() {
+      send({ type: 'update_settings', settings: gatherSettings() });
+    }
+
+    // --- Event listeners ---
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+      customQueue = [];
+      send({ type: 'refresh' });
+    });
+
+    document.getElementById('btnMute').addEventListener('click', () => {
+      muted = !muted;
+      document.getElementById('btnMute').classList.toggle('muted', muted);
+      send({ type: 'update_settings', settings: { muted } });
+    });
+
+    // Settings changes
+    document.getElementById('clockFormat').addEventListener('change', pushSettings);
+    document.getElementById('digraphFreq').addEventListener('change', pushSettings);
+    document.getElementById('titleCase').addEventListener('change', pushSettings);
+    document.getElementById('suffixChance').addEventListener('change', pushSettings);
+
+    document.getElementById('btnSeconds').addEventListener('click', () => {
+      const btn = document.getElementById('btnSeconds');
+      const isOn = btn.textContent === 'On';
+      btn.textContent = isOn ? 'Off' : 'On';
+      btn.classList.toggle('btn-primary', !isOn);
+      btn.classList.toggle('btn-secondary', isOn);
+      pushSettings();
+    });
+
+    document.getElementById('maxWordLength').addEventListener('input', (e) => {
+      document.getElementById('maxWordLengthVal').textContent = e.target.value;
+    });
+    document.getElementById('maxWordLength').addEventListener('change', pushSettings);
+
+    document.getElementById('autoRefresh').addEventListener('input', (e) => {
+      document.getElementById('autoRefreshVal').textContent = e.target.value == 0 ? 'Off' : e.target.value;
+    });
+    document.getElementById('autoRefresh').addEventListener('change', pushSettings);
+
+    // Digraph toggles
+    document.getElementById('digraphToggles').addEventListener('click', (e) => {
+      const btn = e.target.closest('.digraph-btn');
+      if (!btn) return;
+      btn.classList.toggle('active');
+      pushSettings();
+    });
+
+    // Custom departure
+    document.getElementById('btnAddCustom').addEventListener('click', () => {
+      const dep = getCustomDeparture();
+      if (!dep) return;
+      customQueue.push(dep);
+      // Merge with current board: replace last row or add
+      const merged = [...currentDepartures];
+      if (merged.length >= 4) {
+        merged.pop();
+      }
+      merged.push(dep);
+      merged.sort((a, b) => a.time.localeCompare(b.time));
+      send({ type: 'custom_departures', departures: merged });
+    });
+
+    document.getElementById('btnSendCustom').addEventListener('click', () => {
+      const dep = getCustomDeparture();
+      if (!dep) return;
+      send({ type: 'custom_departures', departures: [dep] });
+    });
+
+    function getCustomDeparture() {
+      const time = document.getElementById('customTime').value.trim() || '09:00';
+      const dest = document.getElementById('customDest').value.trim().toUpperCase();
+      const plat = document.getElementById('customPlat').value.trim() || '1';
+      const status = document.getElementById('customStatus').value;
+      if (!dest) {
+        document.getElementById('customDest').focus();
+        return null;
+      }
+      const statusColors = { 'ON TIME': '#4ade80', 'DELAYED': '#fbbf24' };
+      return { time, destination: dest, platform: plat, status, statusColor: statusColors[status] || '#4ade80' };
+    }
+
+    // --- Start ---
+    connect();
+  </script>
+</body>
+</html>

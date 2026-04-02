@@ -1,16 +1,19 @@
-import { Board } from './Board.js';
+import { DepartureBoard } from './DepartureBoard.js';
 import { SoundEngine } from './SoundEngine.js';
-import { MessageRotator } from './MessageRotator.js';
-import { KeyboardController } from './KeyboardController.js';
+import { WordBank } from './WordBank.js';
+import { DEFAULT_SETTINGS } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  const boardContainer = document.getElementById('board-container');
+  const container = document.getElementById('board-container');
   const soundEngine = new SoundEngine();
-  const board = new Board(boardContainer, soundEngine);
-  const rotator = new MessageRotator(board);
-  const keyboard = new KeyboardController(rotator, soundEngine);
+  const board = new DepartureBoard(container, soundEngine);
+  const wordBank = new WordBank();
 
-  // Initialize audio on first user interaction (browser autoplay policy)
+  let autoRefreshTimer = null;
+  let ws = null;
+  let settings = { ...DEFAULT_SETTINGS };
+
+  // --- Audio init on first interaction ---
   let audioInitialized = false;
   const initAudio = async () => {
     if (audioInitialized) return;
@@ -23,29 +26,140 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', initAudio);
   document.addEventListener('keydown', initAudio);
 
-  // Start message rotation
-  rotator.start();
-
-  // Volume toggle button in header
-  const volumeBtn = document.getElementById('volume-btn');
-  if (volumeBtn) {
-    volumeBtn.addEventListener('click', () => {
-      initAudio();
-      const muted = soundEngine.toggleMute();
-      volumeBtn.classList.toggle('muted', muted);
-    });
+  // --- Generate and display departures ---
+  function refresh() {
+    const departures = wordBank.generateBoard(4);
+    board.displayDepartures(departures);
+    // Notify control page of current board state
+    sendToServer({ type: 'board_state', departures, settings });
   }
 
-  // "Get Early Access" button: scroll to board and go fullscreen
-  const ctaBtn = document.getElementById('cta-btn');
-  if (ctaBtn) {
-    ctaBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      initAudio();
-      boardContainer.scrollIntoView({ behavior: 'smooth' });
-      setTimeout(() => {
-        document.documentElement.requestFullscreen().catch(() => {});
-      }, 400);
-    });
+  // --- Apply settings ---
+  function applySettings(newSettings) {
+    Object.assign(settings, newSettings);
+    wordBank.updateSettings(settings);
+
+    if (newSettings.clockFormat !== undefined) {
+      board.setClockFormat(newSettings.clockFormat);
+    }
+
+    if (newSettings.showSeconds !== undefined) {
+      board.setShowSeconds(newSettings.showSeconds);
+    }
+
+    // Restart auto-refresh if interval changed
+    startAutoRefresh();
   }
+
+  // --- Auto-refresh timer ---
+  function startAutoRefresh() {
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    if (settings.autoRefreshSeconds > 0) {
+      autoRefreshTimer = setInterval(() => {
+        if (!board.isTransitioning) refresh();
+      }, settings.autoRefreshSeconds * 1000);
+    }
+  }
+
+  // --- WebSocket connection ---
+  function connectWebSocket() {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${location.host}/ws`;
+
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+      // Send current state to any newly connected control pages
+      sendToServer({ type: 'board_state', departures: board.departures, settings });
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        handleMessage(msg);
+      } catch (e) {
+        console.error('Invalid message:', e);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket closed, reconnecting in 3s...');
+      setTimeout(connectWebSocket, 3000);
+    };
+
+    ws.onerror = () => {
+      ws.close();
+    };
+  }
+
+  function sendToServer(msg) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(msg));
+    }
+  }
+
+  function handleMessage(msg) {
+    switch (msg.type) {
+      case 'refresh':
+        refresh();
+        break;
+
+      case 'custom_departures':
+        // Display specific departures from the control page
+        board.displayDepartures(msg.departures);
+        break;
+
+      case 'update_settings':
+        applySettings(msg.settings);
+        break;
+
+      case 'request_state':
+        sendToServer({ type: 'board_state', departures: board.departures, settings });
+        break;
+    }
+  }
+
+  // --- Keyboard controls ---
+  document.addEventListener('keydown', (e) => {
+    switch (e.key) {
+      case 'Enter':
+      case ' ':
+      case 'ArrowRight':
+        e.preventDefault();
+        refresh();
+        break;
+      case 'f':
+      case 'F':
+        e.preventDefault();
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+        break;
+      case 'm':
+      case 'M':
+        e.preventDefault();
+        initAudio();
+        soundEngine.toggleMute();
+        break;
+    }
+  });
+
+  // --- Fullscreen on click ---
+  container.addEventListener('dblclick', () => {
+    initAudio();
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  });
+
+  // --- Start ---
+  applySettings(settings);
+  refresh();
+  startAutoRefresh();
+  connectWebSocket();
 });

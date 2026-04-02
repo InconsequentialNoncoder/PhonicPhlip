@@ -1,86 +1,60 @@
-# FlipOff.
+# Departure Board
 
-**Turn any TV into a retro split-flap display.** The classic flip-board look, without the $3,500 hardware. And it's free.
+A split-flap train departure display for phonics and number practice.
+Built on [FlipOff](https://github.com/magnum6actual/flipoff) by magnum6actual.
 
-![FlipOff Screenshot](screenshot.png)
+## Quick Start (PC testing)
 
-## What is this?
+1. Install Python dependency: `pip install aiohttp`
+2. Run: `python server.py`
+3. Open http://localhost:8080 in your browser (the display)
+4. Open http://localhost:8080/control on your phone (the remote)
 
-FlipOff is a free, open-source web app that emulates a classic mechanical split-flap (flip-board) airport terminal display — the kind you'd see at train stations and airports. It runs full-screen in any browser, turning a TV or large monitor into a beautiful retro display.
+Press F for fullscreen. Press Space/Enter for new departures.
+Double-click to toggle fullscreen.
 
-No accounts. No subscriptions. No $199 fee. Just open `index.html` and go.
+## Raspberry Pi Setup
 
-## Features
+1. Copy this folder to your Pi (e.g. via USB stick to ~/departure-board)
+2. Run the setup script:
+   ```
+   cd ~/departure-board
+   chmod +x setup-pi.sh
+   ./setup-pi.sh
+   ```
+3. The Pi will auto-start the server and display on boot.
 
-- Realistic split-flap animation with colorful scramble transitions
-- Authentic mechanical clacking sound (recorded from a real split-flap display)
-- Auto-rotating inspirational quotes
-- Fullscreen TV mode (press `F`)
-- Keyboard controls for manual navigation
-- Works offline — zero external dependencies
-- Responsive from mobile to 4K displays
-- Pure vanilla HTML/CSS/JS — no frameworks, no build tools, no npm
+## Phone Control
 
-## Quick Start
+Open `http://<pi-ip-address>:8080/control` on your phone.
 
-1. Clone the repo
-2. Open `index.html` in a browser (or serve with any static file server)
-3. Click anywhere to enable audio
-4. Press `F` for fullscreen TV mode
+- **New Departures** — generates random departures from the word bank
+- **Custom departure** — type in your own destination, time, platform
+- **Settings** — clock format, max word length, digraph frequency, auto-refresh interval
+- **Digraph toggles** — enable/disable specific digraphs (sh, ch, th, oo, ee)
 
-```bash
-# Or serve locally:
-python3 -m http.server 8080
-# Then open http://localhost:8080
-```
+## Word Bank
 
-## Keyboard Shortcuts
+Destinations are phonics-optimised and strictly decodable:
+- Core words: CVC and simple patterns (PEN, HULL, FORD, GLEN, BECK...)
+- Digraph words: used sparingly based on frequency setting (SHAW, SHOP, BATH, THIN...)
 
-| Key | Action |
-|-----|--------|
-| `Enter` / `Space` | Next message |
-| `Arrow Left` | Previous message |
-| `Arrow Right` | Next message |
-| `F` | Toggle fullscreen |
-| `M` | Toggle mute |
-| `Escape` | Exit fullscreen |
+No silent letters. No exception words. No ambiguous pronunciations.
 
-## How It Works
+## Files
 
-Each tile on the board is an independent element that can animate through a scramble sequence (rapid random characters with colored backgrounds) before settling on the final character. Only tiles whose content changes between messages animate — just like a real mechanical board.
+- `server.py` — Python web server (HTTP + WebSocket)
+- `index.html` — TV display page
+- `control/index.html` — Phone control page
+- `js/config.js` — Word bank, settings, animation config
+- `js/DepartureBoard.js` — Clock and departure row management
+- `js/WordBank.js` — Phonics-aware random word generator
+- `js/Tile.js` — Individual split-flap tile animation
+- `js/TileRow.js` — Row of tiles helper
+- `js/SoundEngine.js` — Mechanical flap audio
+- `js/flapAudio.js` — Embedded audio data
+- `setup-pi.sh` — Raspberry Pi auto-setup script
 
-The sound is a single recorded audio clip of a real split-flap transition, played once per message change to perfectly sync with the visual animation.
+## Licence
 
-## File Structure
-
-```
-flipoff/
-  index.html           — Single-page app
-  css/
-    reset.css          — CSS reset
-    layout.css         — Page layout (header, hero, board)
-    board.css          — Board container and accent bars
-    tile.css           — Tile styling and 3D flip animation
-    responsive.css     — Media queries for all screen sizes
-  js/
-    main.js            — Entry point and UI wiring
-    Board.js           — Grid manager and transition orchestration
-    Tile.js            — Individual tile animation logic
-    SoundEngine.js     — Audio playback with Web Audio API
-    MessageRotator.js  — Quote rotation timer
-    KeyboardController.js — Keyboard shortcut handling
-    constants.js       — Configuration (grid size, colors, quotes)
-    flapAudio.js       — Embedded audio data (base64)
-```
-
-## Customization
-
-Edit `js/constants.js` to change:
-- **Messages**: Add your own quotes or text
-- **Grid size**: Adjust `GRID_COLS` and `GRID_ROWS`
-- **Timing**: Tweak `SCRAMBLE_DURATION`, `STAGGER_DELAY`, etc.
-- **Colors**: Modify `SCRAMBLE_COLORS` and `ACCENT_COLORS`
-
-## License
-
-MIT — do whatever you want with it.
+MIT (FlipOff) + MIT (modifications).
