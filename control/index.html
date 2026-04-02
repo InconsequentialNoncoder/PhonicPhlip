@@ -300,11 +300,28 @@
 
   <h2>Phase 3 digraphs</h2>
   <div class="digraph-toggles" id="digraphToggles">
-    <button class="digraph-btn active" data-digraph="sh">sh</button>
     <button class="digraph-btn active" data-digraph="ch">ch</button>
+    <button class="digraph-btn active" data-digraph="sh">sh</button>
     <button class="digraph-btn active" data-digraph="th">th</button>
-    <button class="digraph-btn active" data-digraph="oo">oo</button>
+    <button class="digraph-btn active" data-digraph="ng">ng</button>
+    <button class="digraph-btn active" data-digraph="ai">ai</button>
     <button class="digraph-btn active" data-digraph="ee">ee</button>
+    <button class="digraph-btn active" data-digraph="oa">oa</button>
+    <button class="digraph-btn active" data-digraph="oo">oo</button>
+    <button class="digraph-btn active" data-digraph="ar">ar</button>
+    <button class="digraph-btn active" data-digraph="or">or</button>
+    <button class="digraph-btn active" data-digraph="ur">ur</button>
+    <button class="digraph-btn active" data-digraph="ow">ow</button>
+    <button class="digraph-btn active" data-digraph="oi">oi</button>
+    <button class="digraph-btn active" data-digraph="er">er</button>
+  </div>
+
+  <h2>Phase 3 trigraphs</h2>
+  <div class="digraph-toggles" id="trigraphToggles">
+    <button class="digraph-btn active" data-trigraph="igh">igh</button>
+    <button class="digraph-btn active" data-trigraph="air">air</button>
+    <button class="digraph-btn active" data-trigraph="ear">ear</button>
+    <button class="digraph-btn active" data-trigraph="ure">ure</button>
   </div>
 
   <script>
@@ -399,8 +416,13 @@
         updateDigraphVisibility();
       }
       if (s.activeDigraphs) {
-        document.querySelectorAll('.digraph-btn').forEach(btn => {
+        document.querySelectorAll('#digraphToggles .digraph-btn').forEach(btn => {
           btn.classList.toggle('active', s.activeDigraphs.includes(btn.dataset.digraph));
+        });
+      }
+      if (s.activeTrigraphs) {
+        document.querySelectorAll('#trigraphToggles .digraph-btn').forEach(btn => {
+          btn.classList.toggle('active', s.activeTrigraphs.includes(btn.dataset.trigraph));
         });
       }
     }
@@ -408,8 +430,12 @@
     // --- Gather current settings ---
     function gatherSettings() {
       const activeDigraphs = [];
-      document.querySelectorAll('.digraph-btn.active').forEach(b => {
+      document.querySelectorAll('#digraphToggles .digraph-btn.active').forEach(b => {
         activeDigraphs.push(b.dataset.digraph);
+      });
+      const activeTrigraphs = [];
+      document.querySelectorAll('#trigraphToggles .digraph-btn.active').forEach(b => {
+        activeTrigraphs.push(b.dataset.trigraph);
       });
       const activePhases = [];
       document.querySelectorAll('.phase-btn.active').forEach(b => {
@@ -423,14 +449,16 @@
         suffixChance: parseFloat(document.getElementById('suffixChance').value),
         autoRefreshSeconds: parseInt(document.getElementById('autoRefresh').value),
         activeDigraphs,
+        activeTrigraphs,
         activePhases,
       };
     }
 
-    // --- Grey out digraph toggles when Phase 3 is off ---
+    // --- Grey out digraph/trigraph toggles when Phase 3 is off ---
     function updateDigraphVisibility() {
       const phase3Active = document.querySelector('.phase-btn[data-phase="phase3"]').classList.contains('active');
       document.getElementById('digraphToggles').classList.toggle('disabled', !phase3Active);
+      document.getElementById('trigraphToggles').classList.toggle('disabled', !phase3Active);
     }
 
     function pushSettings() {
@@ -490,6 +518,14 @@
 
     // Digraph toggles
     document.getElementById('digraphToggles').addEventListener('click', (e) => {
+      const btn = e.target.closest('.digraph-btn');
+      if (!btn) return;
+      btn.classList.toggle('active');
+      pushSettings();
+    });
+
+    // Trigraph toggles
+    document.getElementById('trigraphToggles').addEventListener('click', (e) => {
       const btn = e.target.closest('.digraph-btn');
       if (!btn) return;
       btn.classList.toggle('active');

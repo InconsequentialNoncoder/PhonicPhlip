@@ -1,4 +1,4 @@
-import { PHASE_WORDS, SUFFIXES, STATUSES, DEFAULT_SETTINGS, MAX_DEST_CHARS, NO_SUFFIX_PHASES, DIGRAPH_PATTERNS } from './config.js';
+import { PHASE_WORDS, SUFFIXES, STATUSES, DEFAULT_SETTINGS, MAX_DEST_CHARS, NO_SUFFIX_PHASES, DIGRAPH_PATTERNS, TRIGRAPH_PATTERNS } from './config.js';
 
 export class WordBank {
   constructor() {
@@ -68,13 +68,17 @@ export class WordBank {
       if (!words) continue;
 
       for (const word of words) {
-        // For Phase 3 words, filter by active digraph toggles
+        // For Phase 3 words, filter by active digraph/trigraph toggles
         if (phase === 'phase3') {
           const wordLower = word.toLowerCase();
+          // Check trigraphs first (longer patterns before shorter)
+          const matchesTrigraph = TRIGRAPH_PATTERNS.some(t =>
+            (this.settings.activeTrigraphs || []).includes(t) && wordLower.includes(t)
+          );
           const matchesDigraph = DIGRAPH_PATTERNS.some(d =>
             this.settings.activeDigraphs.includes(d) && wordLower.includes(d)
           );
-          if (!matchesDigraph) continue;
+          if (!matchesTrigraph && !matchesDigraph) continue;
         }
 
         // Filter by max destination character count

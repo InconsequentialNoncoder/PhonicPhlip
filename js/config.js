@@ -25,7 +25,8 @@ export const DEFAULT_SETTINGS = {
   showSeconds: false,    // show seconds on clock
   titleCase: false,      // false = ALL CAPS, true = Title Case
   suffixChance: 0.4,     // chance of adding a suffix word
-  activeDigraphs: ['sh', 'ch', 'th', 'oo', 'ee'],
+  activeDigraphs: ['ch', 'sh', 'th', 'ng', 'ai', 'ee', 'oa', 'oo', 'ar', 'or', 'ur', 'ow', 'oi', 'er'],
+  activeTrigraphs: ['igh', 'air', 'ear', 'ure'],
   autoRefreshSeconds: 0,
   maxPlatform: 10,       // max platform number (1–99)
   activePhases: ['phase2', 'phase3', 'phase4'],
@@ -114,8 +115,10 @@ export const SUFFIXES = [
   'BANK', 'DEN', 'HUT', 'PIT', 'TOP',
 ];
 
-// The five toggleable digraphs for filtering Phase 3 words
-export const DIGRAPH_PATTERNS = ['sh', 'ch', 'th', 'oo', 'ee'];
+// Toggleable Phase 3 consonant digraphs, vowel digraphs, and trigraphs
+// Trigraphs listed first so matching checks longer patterns before shorter ones
+export const TRIGRAPH_PATTERNS = ['igh', 'air', 'ear', 'ure'];
+export const DIGRAPH_PATTERNS = ['ch', 'sh', 'th', 'ng', 'ai', 'ee', 'oa', 'oo', 'ar', 'or', 'ur', 'ow', 'oi', 'er'];
 
 // Status options with relative weights
 export const STATUSES = [
