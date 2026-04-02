@@ -130,6 +130,11 @@ html, body {
   padding-right: 3vw;
 }
 
+/* Time colon tile — narrower than digit tiles */
+.dep-time .tile:nth-child(3) {
+  width: clamp(14px, 1.4vw, 36px);
+}
+
 /* --- Tile Row (within cells) --- */
 .tile-row {
   display: flex;
@@ -252,6 +257,11 @@ html, body {
 .mobile .dep-plat .tile-front span,
 .mobile .dep-plat .tile-back span {
   font-size: 6vw;
+}
+
+/* Narrower colon tile on mobile */
+.mobile .dep-time .tile:nth-child(3) {
+  width: 3vw;
 }
 
 /* Tighter cell spacing on mobile */
