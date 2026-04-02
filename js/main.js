@@ -158,8 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Detect mobile device ---
+  // Safari on iPad reports as "Macintosh" in user agent, so also check
+  // for touch capability with small-ish screen as fallback
   const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    || (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+    || ('ontouchstart' in window && window.innerWidth < 1200)
+    || (navigator.maxTouchPoints > 1 && navigator.platform === 'MacIntel');
   if (isMobile) {
     document.body.classList.add('mobile');
   }
