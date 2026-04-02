@@ -197,13 +197,18 @@ function initToolbar(reconnect) {
   const toolbar = document.createElement('div');
   toolbar.className = 'top-toolbar';
 
-  // Config button — opens control page in new tab
+  // Config button — opens control page in new tab, passing current session
   const configLink = document.createElement('a');
   configLink.className = 'config-btn';
   configLink.textContent = 'Config';
-  configLink.href = '/control';
   configLink.target = '_blank';
   configLink.rel = 'noopener';
+  configLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    const session = getSessionId();
+    const url = session ? `/control?session=${encodeURIComponent(session)}` : '/control';
+    window.open(url, '_blank', 'noopener');
+  });
   toolbar.appendChild(configLink);
 
   // Sync widget (only on hosted version)

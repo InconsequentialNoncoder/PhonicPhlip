@@ -649,6 +649,14 @@
       const syncDisconnect = document.getElementById('syncDisconnect');
       syncBar.style.display = 'flex';
 
+      // Check for session passed via URL (from display page Config button)
+      const urlParams = new URLSearchParams(location.search);
+      const urlSession = urlParams.get('session');
+      if (urlSession) {
+        const cleaned = sanitiseSessionId(urlSession);
+        if (cleaned) setSessionId(cleaned);
+      }
+
       const existing = getSessionId();
       if (existing) {
         syncInput.value = existing;
