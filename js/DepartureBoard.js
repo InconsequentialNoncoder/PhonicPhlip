@@ -36,17 +36,6 @@ export class DepartureBoard {
     this._updateSecondsVisibility();
     containerEl.appendChild(this.clockSection);
 
-    // --- Departures Header ---
-    const header = document.createElement('div');
-    header.className = 'departures-header';
-    header.innerHTML = `
-      <span class="col-time">TIME</span>
-      <span class="col-dest">DESTINATION</span>
-      <span class="col-plat">PLAT</span>
-      <span class="col-status">STATUS</span>
-    `;
-    containerEl.appendChild(header);
-
     // --- Departure Rows ---
     const rowsContainer = document.createElement('div');
     rowsContainer.className = 'departures-body';
@@ -153,10 +142,10 @@ export class DepartureBoard {
     const destRow = new TileRow(MAX_DEST_CHARS, destCell);
     rowEl.appendChild(destCell);
 
-    // Platform column: 1 tile
+    // Platform column: 2 tiles
     const platCell = document.createElement('div');
     platCell.className = 'dep-cell dep-plat';
-    const platRow = new TileRow(1, platCell);
+    const platRow = new TileRow(2, platCell);
     rowEl.appendChild(platCell);
 
     // Status column
@@ -192,7 +181,7 @@ export class DepartureBoard {
       } else {
         row.timeRow.setText('     ', rowDelay);
         row.destRow.setText('            ', rowDelay);
-        row.platRow.setText(' ', rowDelay);
+        row.platRow.setText('  ', rowDelay);
         row.statusRow.setText('       ', rowDelay);
         row.el.style.opacity = '0.3';
       }

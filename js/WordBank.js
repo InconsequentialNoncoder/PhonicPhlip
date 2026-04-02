@@ -10,19 +10,20 @@ export class WordBank {
   }
 
   // Generate a random departure
-  generateDeparture() {
+  generateDeparture(usedPlatforms) {
     const destination = this._buildDestination();
     const time = this._randomTime();
-    const platform = this._randomPlatform();
+    const platform = this._randomPlatform(usedPlatforms);
     const status = this._pickStatus();
     return { time, destination, platform, status: status.text, statusColor: status.color };
   }
 
   // Generate a full board of departures
   generateBoard(count = 4) {
+    const usedPlatforms = new Set();
     const departures = [];
     for (let i = 0; i < count; i++) {
-      departures.push(this.generateDeparture());
+      departures.push(this.generateDeparture(usedPlatforms));
     }
     departures.sort((a, b) => {
       const [ah, am] = a.time.split(':').map(Number);
@@ -84,8 +85,22 @@ export class WordBank {
     return `${hh}:${mm}`;
   }
 
-  _randomPlatform() {
-    return String(1 + Math.floor(Math.random() * 9));
+  _randomPlatform(usedPlatforms) {
+    const max = this.settings.maxPlatform || 10;
+
+    // Try to pick an unused platform
+    if (usedPlatforms && usedPlatforms.size < max) {
+      let num;
+      do {
+        num = 1 + Math.floor(Math.random() * max);
+      } while (usedPlatforms.has(num));
+      usedPlatforms.add(num);
+      return String(num).padStart(2, ' ');
+    }
+
+    // All platforms used — fall back to random
+    const num = 1 + Math.floor(Math.random() * max);
+    return String(num).padStart(2, ' ');
   }
 
   _pickStatus() {

@@ -19,7 +19,7 @@ html, body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2vh 3vw;
+  padding: 2vh 2vw;
   gap: 2vh;
 }
 
@@ -37,8 +37,8 @@ html, body {
 }
 
 .clock-digit {
-  width: clamp(60px, 8vw, 140px);
-  height: clamp(80px, 10vw, 180px);
+  width: clamp(60px, 8vw, 220px);
+  height: clamp(80px, 10vw, 280px);
   background: #1a1a1a;
   border-radius: 6px;
   position: relative;
@@ -71,7 +71,7 @@ html, body {
 }
 
 .clock-digit-face span {
-  font-size: clamp(48px, 6.5vw, 120px);
+  font-size: clamp(48px, 6.5vw, 190px);
   font-weight: 700;
   color: #f5c825;
   font-family: 'Courier New', Courier, monospace;
@@ -79,7 +79,7 @@ html, body {
 }
 
 .clock-colon {
-  font-size: clamp(40px, 5.5vw, 100px);
+  font-size: clamp(40px, 5.5vw, 160px);
   font-weight: 700;
   color: #f5c825;
   font-family: 'Courier New', Courier, monospace;
@@ -97,29 +97,10 @@ html, body {
   100% { transform: perspective(300px) rotateX(0deg); }
 }
 
-/* --- Departures Header --- */
-.departures-header {
-  display: grid;
-  grid-template-columns: 5fr 12fr 1.5fr 7fr;
-  gap: 3vw;
-  width: 94%;
-  max-width: 1600px;
-  padding: 0.8vh 1vw;
-  border-bottom: 2px solid #333;
-}
-
-.departures-header span {
-  font-size: clamp(11px, 1.2vw, 18px);
-  font-weight: 500;
-  color: #666;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
 
 /* --- Departures Body --- */
 .departures-body {
-  width: 94%;
-  max-width: 1600px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1vh;
@@ -128,12 +109,25 @@ html, body {
 /* --- Departure Row --- */
 .departure-row {
   display: grid;
-  grid-template-columns: 5fr 12fr 1.5fr 7fr;
-  gap: 3vw;
+  grid-template-columns: auto 1fr auto auto;
+  column-gap: 0;
   align-items: center;
   padding: 0.5vh 1vw;
   border-bottom: 1px solid #1f1f1f;
   transition: opacity 0.5s;
+}
+
+/* --- Cell spacing --- */
+.dep-time {
+  padding-right: 3vw;
+}
+
+.dep-dest {
+  padding-right: 2vw;
+}
+
+.dep-plat {
+  padding-right: 3vw;
 }
 
 /* --- Tile Row (within cells) --- */
@@ -144,26 +138,26 @@ html, body {
 
 /* --- Departure cell tiles — override tile sizes --- */
 .dep-cell .tile {
-  width: clamp(28px, 3.5vw, 56px);
-  height: clamp(36px, 4.5vw, 72px);
+  width: clamp(24px, 2.8vw, 72px);
+  height: clamp(36px, 4.5vw, 115px);
 }
 
 .dep-cell .tile-front span,
 .dep-cell .tile-back span {
-  font-size: clamp(20px, 2.5vw, 44px);
+  font-size: clamp(20px, 2.5vw, 70px);
   color: #f5c825;
   font-family: 'Courier New', Courier, monospace;
 }
 
 /* Platform tile — slightly larger for emphasis */
 .dep-plat .tile {
-  width: clamp(36px, 4vw, 64px);
-  height: clamp(36px, 4.5vw, 72px);
+  width: clamp(30px, 3.2vw, 80px);
+  height: clamp(36px, 4.5vw, 115px);
 }
 
 .dep-plat .tile-front span,
 .dep-plat .tile-back span {
-  font-size: clamp(24px, 3vw, 50px);
+  font-size: clamp(24px, 3vw, 80px);
   color: #fff;
 }
 
@@ -175,7 +169,7 @@ html, body {
 
 /* --- Departures label --- */
 .board-label {
-  font-size: clamp(10px, 1vw, 14px);
+  font-size: clamp(10px, 1vw, 22px);
   color: #444;
   letter-spacing: 4px;
   text-transform: uppercase;

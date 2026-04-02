@@ -13,7 +13,7 @@ export const SCRAMBLE_COLORS = [
 
 // Departure board layout
 export const DEPARTURE_ROWS = 4;
-export const MAX_DEST_CHARS = 12;  // enough for "Hull Town" etc.
+export const MAX_DEST_CHARS = 13;  // enough for "Cloth Hill" etc.
 export const MAX_STATUS_CHARS = 7; // "ON TIME" = 7, "DELAYED" = 7
 
 // Default settings (overridable from phone)
@@ -26,6 +26,7 @@ export const DEFAULT_SETTINGS = {
   suffixChance: 0.4,    // chance of adding a suffix word
   activeDigraphs: ['sh', 'ch', 'th', 'oo', 'ee'],
   autoRefreshSeconds: 0,
+  maxPlatform: 10,        // max platform number (1–99)
 };
 
 // Word bank — strictly decodable, no silent letters, no exceptions
