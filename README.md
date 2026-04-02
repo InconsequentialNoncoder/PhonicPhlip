@@ -4,8 +4,6 @@ A split-flap train departure board that teaches phonics. Built for a reception-a
 
 Built on [FlipOff](https://github.com/magnum6actual/flipoff) by magnum6actual (MIT licence).
 
-**Live demo:** [phonic-phlip.lawrencedejuwiseman.workers.dev](https://phonic-phlip.lawrencedejuwiseman.workers.dev)
-
 ## What it does
 
 A full-screen split-flap departure board with a ticking clock and four departure rows. Every destination is a strictly decodable word appropriate for Phase 3/4 phonics readers. The board generates random departures with phonics-aware station names, optional digraph words (sh, ch, th, oo, ee), and compound names with decodable suffixes (TOWN, HALT, PARK, etc.).
