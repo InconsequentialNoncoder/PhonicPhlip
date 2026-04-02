@@ -1,0 +1,15 @@
+node_modules
+.wrangler
+.git
+.github
+src
+server.py
+setup-pi.sh
+requirements.txt
+wrangler.toml
+package.json
+package-lock.json
+README.md
+CLAUDE.md
+.gitignore
+.assetsignore

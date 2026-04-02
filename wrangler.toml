@@ -1,0 +1,14 @@
+name = "phonic-phlip"
+main = "src/worker.js"
+compatibility_date = "2025-04-01"
+
+[assets]
+directory = "."
+
+[[durable_objects.bindings]]
+name = "RELAY"
+class_name = "WebSocketRelay"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WebSocketRelay"]
