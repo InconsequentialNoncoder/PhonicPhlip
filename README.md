@@ -3,6 +3,9 @@
 A split-flap train departure board that teaches phonics. Built for a reception-aged child learning to read, displayed on a wall-mounted TV via Raspberry Pi, controlled from a phone.
 
 Built on [FlipOff](https://github.com/magnum6actual/flipoff) by magnum6actual (MIT licence).
+<img width="1536" height="620" alt="image" src="https://github.com/user-attachments/assets/57dbdb33-8d34-4fdc-afe7-2b87a1752be8" />
+<img width="513" height="602" alt="image" src="https://github.com/user-attachments/assets/f8b9c78e-6613-4d61-8cbc-c021572756e3" />
+<img width="517" height="686" alt="image" src="https://github.com/user-attachments/assets/c8ded701-ef34-4a3f-b31c-18a2d551e239" />
 
 ## What it does
 
