@@ -182,10 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('mobile');
   }
 
-  // --- Sync button ---
-  if (!isLocalServer()) {
-    initSyncButton(connectWebSocket);
-  }
+  // --- Top toolbar (sync + config) ---
+  initToolbar(connectWebSocket);
 
   // --- Start ---
   applySettings(settings);
@@ -194,56 +192,76 @@ document.addEventListener('DOMContentLoaded', () => {
   connectWebSocket();
 });
 
-// --- Sync button UI ---
-function initSyncButton(reconnect) {
-  const currentSession = getSessionId();
+// --- Top toolbar ---
+function initToolbar(reconnect) {
+  const toolbar = document.createElement('div');
+  toolbar.className = 'top-toolbar';
 
-  const widget = document.createElement('div');
-  widget.className = 'sync-widget';
-  widget.innerHTML = `
-    <button class="sync-btn ${currentSession ? 'active' : ''}" id="syncBtn">
-      ${currentSession || 'Sync'}
-    </button>
-    <div class="sync-panel" id="syncPanel" style="display:none;">
-      <input type="text" id="syncInput" placeholder="e.g. smith-family"
-        maxlength="40" value="${currentSession || ''}">
-      <div class="sync-actions">
-        <button class="sync-connect" id="syncConnect">Connect</button>
-        <button class="sync-disconnect" id="syncDisconnect"
-          style="display:${currentSession ? 'block' : 'none'}">Disconnect</button>
+  // Config button — opens control page in new tab
+  const configLink = document.createElement('a');
+  configLink.className = 'config-btn';
+  configLink.textContent = 'Config';
+  configLink.href = '/control';
+  configLink.target = '_blank';
+  configLink.rel = 'noopener';
+  toolbar.appendChild(configLink);
+
+  // Sync widget (only on hosted version)
+  if (!isLocalServer()) {
+    const currentSession = getSessionId();
+
+    const widget = document.createElement('div');
+    widget.className = 'sync-widget';
+    widget.innerHTML = `
+      <button class="sync-btn ${currentSession ? 'active' : ''}" id="syncBtn">
+        ${currentSession || 'Sync'}
+      </button>
+      <div class="sync-panel" id="syncPanel" style="display:none;">
+        <input type="text" id="syncInput" placeholder="e.g. smith-family"
+          maxlength="40" value="${currentSession || ''}">
+        <div class="sync-actions">
+          <button class="sync-connect" id="syncConnect">Connect</button>
+          <button class="sync-disconnect" id="syncDisconnect"
+            style="display:${currentSession ? 'block' : 'none'}">Disconnect</button>
+        </div>
       </div>
-    </div>
-  `;
-  document.body.appendChild(widget);
+    `;
+    toolbar.appendChild(widget);
 
-  const btn = document.getElementById('syncBtn');
-  const panel = document.getElementById('syncPanel');
-  const input = document.getElementById('syncInput');
-  const connectBtn = document.getElementById('syncConnect');
-  const disconnectBtn = document.getElementById('syncDisconnect');
+    // Defer event binding until after DOM insertion
+    setTimeout(() => {
+      const btn = document.getElementById('syncBtn');
+      const panel = document.getElementById('syncPanel');
+      const input = document.getElementById('syncInput');
+      const connectBtn = document.getElementById('syncConnect');
+      const disconnectBtn = document.getElementById('syncDisconnect');
 
-  btn.addEventListener('click', () => {
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  });
+      btn.addEventListener('click', () => {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      });
 
-  connectBtn.addEventListener('click', () => {
-    const id = sanitiseSessionId(input.value);
-    if (!id) return;
-    setSessionId(id);
-    btn.textContent = id;
-    btn.classList.add('active');
-    disconnectBtn.style.display = 'block';
-    panel.style.display = 'none';
-    reconnect();
-  });
+      connectBtn.addEventListener('click', () => {
+        const id = sanitiseSessionId(input.value);
+        if (!id) return;
+        setSessionId(id);
+        btn.textContent = id;
+        btn.classList.add('active');
+        disconnectBtn.style.display = 'block';
+        panel.style.display = 'none';
+        reconnect();
+      });
 
-  disconnectBtn.addEventListener('click', () => {
-    setSessionId(null);
-    btn.textContent = 'Sync';
-    btn.classList.remove('active');
-    input.value = '';
-    disconnectBtn.style.display = 'none';
-    panel.style.display = 'none';
-    reconnect();
-  });
+      disconnectBtn.addEventListener('click', () => {
+        setSessionId(null);
+        btn.textContent = 'Sync';
+        btn.classList.remove('active');
+        input.value = '';
+        disconnectBtn.style.display = 'none';
+        panel.style.display = 'none';
+        reconnect();
+      });
+    }, 0);
+  }
+
+  document.body.appendChild(toolbar);
 }

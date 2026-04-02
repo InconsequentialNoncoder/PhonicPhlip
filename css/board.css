@@ -181,12 +181,38 @@ html, body {
   text-align: center;
 }
 
-/* --- Sync widget --- */
-.sync-widget {
+/* --- Top-right toolbar --- */
+.top-toolbar {
   position: fixed;
   top: 10px;
   right: 32px;
   z-index: 100;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.config-btn {
+  background: #2a2a2a;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.4;
+}
+
+.config-btn:hover {
+  color: #f5c825;
+  border-color: #f5c825;
+}
+
+/* --- Sync widget --- */
+.sync-widget {
+  position: relative;
 }
 
 .sync-btn {
