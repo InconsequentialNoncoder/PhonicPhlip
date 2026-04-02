@@ -123,7 +123,7 @@ html, body {
 }
 
 .dep-dest {
-  padding-right: 2vw;
+  padding-right: 0;
 }
 
 .dep-plat {
@@ -380,7 +380,7 @@ html, body {
 }
 
 .mobile .dep-dest {
-  padding-right: 1.5vw;
+  padding-right: 0;
 }
 
 .mobile .dep-plat {
