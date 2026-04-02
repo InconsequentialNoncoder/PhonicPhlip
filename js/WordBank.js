@@ -68,18 +68,36 @@ export class WordBank {
       if (!words) continue;
 
       for (const word of words) {
-        // For Phase 3 words, filter by active digraph/trigraph toggles
-        if (phase === 'phase3') {
-          const wordLower = word.toLowerCase();
-          // Check trigraphs first (longer patterns before shorter)
-          const matchesTrigraph = TRIGRAPH_PATTERNS.some(t =>
-            (this.settings.activeTrigraphs || []).includes(t) && wordLower.includes(t)
-          );
-          const matchesDigraph = DIGRAPH_PATTERNS.some(d =>
-            this.settings.activeDigraphs.includes(d) && wordLower.includes(d)
-          );
-          if (!matchesTrigraph && !matchesDigraph) continue;
+        // Filter by active digraph/trigraph toggles
+        // A word is included if it contains no digraphs/trigraphs at all,
+        // OR if every digraph/trigraph it contains is active
+        const wordLower = word.toLowerCase();
+        let blocked = false;
+        for (const t of TRIGRAPH_PATTERNS) {
+          if (wordLower.includes(t) && !(this.settings.activeTrigraphs || []).includes(t)) {
+            blocked = true;
+            break;
+          }
         }
+        if (!blocked) {
+          for (const d of DIGRAPH_PATTERNS) {
+            if (wordLower.includes(d)) {
+              // Skip if this match is actually part of an active trigraph
+              let coveredByTrigraph = false;
+              for (const t of TRIGRAPH_PATTERNS) {
+                if (t.includes(d) && wordLower.includes(t) && (this.settings.activeTrigraphs || []).includes(t)) {
+                  coveredByTrigraph = true;
+                  break;
+                }
+              }
+              if (!coveredByTrigraph && !this.settings.activeDigraphs.includes(d)) {
+                blocked = true;
+                break;
+              }
+            }
+          }
+        }
+        if (blocked) continue;
 
         // Filter by max destination character count
         if (word.length <= MAX_DEST_CHARS) {

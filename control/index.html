@@ -137,10 +137,6 @@
       color: #111;
       border-color: #f5c825;
     }
-    .digraph-toggles.disabled {
-      opacity: 0.3;
-      pointer-events: none;
-    }
 
     /* Custom departure form */
     .custom-form {
@@ -298,7 +294,7 @@
     <button class="phase-btn" data-phase="phase6c">6c</button>
   </div>
 
-  <h2>Phase 3 digraphs</h2>
+  <h2>Digraphs</h2>
   <div class="digraph-toggles" id="digraphToggles">
     <button class="digraph-btn active" data-digraph="ch">ch</button>
     <button class="digraph-btn active" data-digraph="sh">sh</button>
@@ -316,7 +312,7 @@
     <button class="digraph-btn active" data-digraph="er">er</button>
   </div>
 
-  <h2>Phase 3 trigraphs</h2>
+  <h2>Trigraphs</h2>
   <div class="digraph-toggles" id="trigraphToggles">
     <button class="digraph-btn active" data-trigraph="igh">igh</button>
     <button class="digraph-btn active" data-trigraph="air">air</button>
@@ -413,7 +409,7 @@
         document.querySelectorAll('.phase-btn').forEach(btn => {
           btn.classList.toggle('active', s.activePhases.includes(btn.dataset.phase));
         });
-        updateDigraphVisibility();
+  
       }
       if (s.activeDigraphs) {
         document.querySelectorAll('#digraphToggles .digraph-btn').forEach(btn => {
@@ -454,12 +450,6 @@
       };
     }
 
-    // --- Grey out digraph/trigraph toggles when Phase 3 is off ---
-    function updateDigraphVisibility() {
-      const phase3Active = document.querySelector('.phase-btn[data-phase="phase3"]').classList.contains('active');
-      document.getElementById('digraphToggles').classList.toggle('disabled', !phase3Active);
-      document.getElementById('trigraphToggles').classList.toggle('disabled', !phase3Active);
-    }
 
     function pushSettings() {
       send({ type: 'update_settings', settings: gatherSettings() });
@@ -512,7 +502,7 @@
       const btn = e.target.closest('.phase-btn');
       if (!btn) return;
       btn.classList.toggle('active');
-      updateDigraphVisibility();
+
       pushSettings();
     });
 
