@@ -111,15 +111,15 @@
       font-size: 14px;
     }
 
-    /* Digraph toggles */
-    .digraph-toggles {
+    /* Phase and digraph toggles */
+    .phase-toggles, .digraph-toggles {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-top: 8px;
       margin-bottom: 16px;
     }
-    .digraph-btn {
+    .phase-btn, .digraph-btn {
       padding: 8px 16px;
       border-radius: 8px;
       border: 1px solid #333;
@@ -132,10 +132,14 @@
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
-    .digraph-btn.active {
+    .phase-btn.active, .digraph-btn.active {
       background: #f5c825;
       color: #111;
       border-color: #f5c825;
+    }
+    .digraph-toggles.disabled {
+      opacity: 0.3;
+      pointer-events: none;
     }
 
     /* Custom departure form */
@@ -270,23 +274,6 @@
   </div>
 
   <div class="setting-row">
-    <span class="setting-label">Max word length</span>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <input type="range" id="maxWordLength" min="3" max="7" value="5">
-      <span class="setting-value" id="maxWordLengthVal">5</span>
-    </div>
-  </div>
-
-  <div class="setting-row">
-    <span class="setting-label">Digraph frequency</span>
-    <select id="digraphFreq">
-      <option value="0">None</option>
-      <option value="0.25" selected>Occasional</option>
-      <option value="0.5">Frequent</option>
-    </select>
-  </div>
-
-  <div class="setting-row">
     <span class="setting-label">Auto-refresh (sec)</span>
     <div style="display:flex;align-items:center;gap:8px;">
       <input type="range" id="autoRefresh" min="0" max="120" value="0" step="5">
@@ -294,7 +281,19 @@
     </div>
   </div>
 
-  <h2>Active digraphs</h2>
+  <h2>Phonics Phases</h2>
+  <div class="phase-toggles" id="phaseToggles">
+    <button class="phase-btn active" data-phase="phase2">2</button>
+    <button class="phase-btn active" data-phase="phase3">3</button>
+    <button class="phase-btn active" data-phase="phase4">4</button>
+    <button class="phase-btn" data-phase="phase5a">5a</button>
+    <button class="phase-btn" data-phase="phase5b">5b</button>
+    <button class="phase-btn" data-phase="phase6a">6a</button>
+    <button class="phase-btn" data-phase="phase6b">6b</button>
+    <button class="phase-btn" data-phase="phase6c">6c</button>
+  </div>
+
+  <h2>Phase 3 digraphs</h2>
   <div class="digraph-toggles" id="digraphToggles">
     <button class="digraph-btn active" data-digraph="sh">sh</button>
     <button class="digraph-btn active" data-digraph="ch">ch</button>
@@ -383,16 +382,15 @@
       if (s.suffixChance !== undefined) {
         document.getElementById('suffixChance').value = s.suffixChance;
       }
-      if (s.maxWordLength) {
-        document.getElementById('maxWordLength').value = s.maxWordLength;
-        document.getElementById('maxWordLengthVal').textContent = s.maxWordLength;
-      }
-      if (s.digraphFrequency !== undefined) {
-        document.getElementById('digraphFreq').value = s.digraphFrequency;
-      }
       if (s.autoRefreshSeconds !== undefined) {
         document.getElementById('autoRefresh').value = s.autoRefreshSeconds;
         document.getElementById('autoRefreshVal').textContent = s.autoRefreshSeconds || 'Off';
+      }
+      if (s.activePhases) {
+        document.querySelectorAll('.phase-btn').forEach(btn => {
+          btn.classList.toggle('active', s.activePhases.includes(btn.dataset.phase));
+        });
+        updateDigraphVisibility();
       }
       if (s.activeDigraphs) {
         document.querySelectorAll('.digraph-btn').forEach(btn => {
@@ -407,17 +405,26 @@
       document.querySelectorAll('.digraph-btn.active').forEach(b => {
         activeDigraphs.push(b.dataset.digraph);
       });
+      const activePhases = [];
+      document.querySelectorAll('.phase-btn.active').forEach(b => {
+        activePhases.push(b.dataset.phase);
+      });
       const secBtn = document.getElementById('btnSeconds');
       return {
         clockFormat: parseInt(document.getElementById('clockFormat').value),
         showSeconds: secBtn.textContent === 'On',
         titleCase: document.getElementById('titleCase').value === 'true',
         suffixChance: parseFloat(document.getElementById('suffixChance').value),
-        maxWordLength: parseInt(document.getElementById('maxWordLength').value),
-        digraphFrequency: parseFloat(document.getElementById('digraphFreq').value),
         autoRefreshSeconds: parseInt(document.getElementById('autoRefresh').value),
         activeDigraphs,
+        activePhases,
       };
+    }
+
+    // --- Grey out digraph toggles when Phase 3 is off ---
+    function updateDigraphVisibility() {
+      const phase3Active = document.querySelector('.phase-btn[data-phase="phase3"]').classList.contains('active');
+      document.getElementById('digraphToggles').classList.toggle('disabled', !phase3Active);
     }
 
     function pushSettings() {
@@ -438,7 +445,6 @@
 
     // Settings changes
     document.getElementById('clockFormat').addEventListener('change', pushSettings);
-    document.getElementById('digraphFreq').addEventListener('change', pushSettings);
     document.getElementById('titleCase').addEventListener('change', pushSettings);
     document.getElementById('suffixChance').addEventListener('change', pushSettings);
 
@@ -451,15 +457,19 @@
       pushSettings();
     });
 
-    document.getElementById('maxWordLength').addEventListener('input', (e) => {
-      document.getElementById('maxWordLengthVal').textContent = e.target.value;
-    });
-    document.getElementById('maxWordLength').addEventListener('change', pushSettings);
-
     document.getElementById('autoRefresh').addEventListener('input', (e) => {
       document.getElementById('autoRefreshVal').textContent = e.target.value == 0 ? 'Off' : e.target.value;
     });
     document.getElementById('autoRefresh').addEventListener('change', pushSettings);
+
+    // Phase toggles
+    document.getElementById('phaseToggles').addEventListener('click', (e) => {
+      const btn = e.target.closest('.phase-btn');
+      if (!btn) return;
+      btn.classList.toggle('active');
+      updateDigraphVisibility();
+      pushSettings();
+    });
 
     // Digraph toggles
     document.getElementById('digraphToggles').addEventListener('click', (e) => {

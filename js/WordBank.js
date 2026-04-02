@@ -1,4 +1,4 @@
-import { WORD_BANK, STATUSES, DEFAULT_SETTINGS, MAX_DEST_CHARS } from './config.js';
+import { PHASE_WORDS, SUFFIXES, STATUSES, DEFAULT_SETTINGS, MAX_DEST_CHARS, NO_SUFFIX_PHASES, DIGRAPH_PATTERNS } from './config.js';
 
 export class WordBank {
   constructor() {
@@ -34,16 +34,17 @@ export class WordBank {
   }
 
   _buildDestination() {
-    const baseWord = this._pickWord();
-    let destination = baseWord;
+    const { word, phase } = this._pickWord();
+    let destination = word;
 
-    // Maybe add a suffix
-    if (Math.random() < this.settings.suffixChance && WORD_BANK.suffixes.length > 0) {
-      const suffix = WORD_BANK.suffixes[Math.floor(Math.random() * WORD_BANK.suffixes.length)];
-      const combined = baseWord + ' ' + suffix;
-      // Only add suffix if it fits within the destination column
-      if (combined.length <= MAX_DEST_CHARS) {
-        destination = combined;
+    // Only add suffixes to single-syllable words (Phases 2-5)
+    if (!NO_SUFFIX_PHASES.includes(phase)) {
+      if (Math.random() < this.settings.suffixChance && SUFFIXES.length > 0) {
+        const suffix = SUFFIXES[Math.floor(Math.random() * SUFFIXES.length)];
+        const combined = word + ' ' + suffix;
+        if (combined.length <= MAX_DEST_CHARS) {
+          destination = combined;
+        }
       }
     }
 
@@ -59,22 +60,36 @@ export class WordBank {
   }
 
   _pickWord() {
-    const useDigraph = Math.random() < this.settings.digraphFrequency
-      && this.settings.activeDigraphs.length > 0;
+    const activePhases = this.settings.activePhases || [];
+    const pool = [];
 
-    if (useDigraph) {
-      const digraph = this.settings.activeDigraphs[
-        Math.floor(Math.random() * this.settings.activeDigraphs.length)
-      ];
-      const words = (WORD_BANK.digraphs[digraph] || [])
-        .filter(w => w.length <= this.settings.maxWordLength);
-      if (words.length > 0) {
-        return words[Math.floor(Math.random() * words.length)];
+    for (const phase of activePhases) {
+      const words = PHASE_WORDS[phase];
+      if (!words) continue;
+
+      for (const word of words) {
+        // For Phase 3 words, filter by active digraph toggles
+        if (phase === 'phase3') {
+          const wordLower = word.toLowerCase();
+          const matchesDigraph = DIGRAPH_PATTERNS.some(d =>
+            this.settings.activeDigraphs.includes(d) && wordLower.includes(d)
+          );
+          if (!matchesDigraph) continue;
+        }
+
+        // Filter by max destination character count
+        if (word.length <= MAX_DEST_CHARS) {
+          pool.push({ word, phase });
+        }
       }
     }
 
-    const eligible = WORD_BANK.core.filter(w => w.length <= this.settings.maxWordLength);
-    return eligible[Math.floor(Math.random() * eligible.length)];
+    // Fallback if pool is empty (all phases/digraphs disabled)
+    if (pool.length === 0) {
+      return { word: 'PEN', phase: 'phase2' };
+    }
+
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   _randomTime() {
