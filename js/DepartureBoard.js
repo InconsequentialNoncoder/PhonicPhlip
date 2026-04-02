@@ -198,6 +198,12 @@ export class DepartureBoard {
     }, TOTAL_TRANSITION + DEPARTURE_ROWS * 200 + 200);
   }
 
+  setVisibleRows(visibleRows) {
+    for (let i = 0; i < this.rows.length; i++) {
+      this.rows[i].el.style.display = visibleRows[i] ? '' : 'none';
+    }
+  }
+
   destroy() {
     if (this._clockInterval) clearInterval(this._clockInterval);
   }

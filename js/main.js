@@ -48,6 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
       board.setShowSeconds(newSettings.showSeconds);
     }
 
+    if (newSettings.visibleRows !== undefined) {
+      board.setVisibleRows(newSettings.visibleRows);
+    }
+
     // Restart auto-refresh if interval changed
     startAutoRefresh();
   }

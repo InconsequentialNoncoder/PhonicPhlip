@@ -31,6 +31,7 @@ export const DEFAULT_SETTINGS = {
   maxPlatform: 10,       // max platform number (1–99)
   activePhases: ['phase2', 'phase3', 'phase4'],
   statusMode: 'status',  // 'status' (ON TIME/DELAYED) or 'type' (train types)
+  visibleRows: [true, true, true, true],  // which departure rows are shown
 };
 
 // Phase-gated word bank
