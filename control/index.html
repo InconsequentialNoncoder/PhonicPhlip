@@ -198,6 +198,10 @@
     .status-on { color: #4ade80; }
     .status-delayed { color: #fbbf24; }
     .status-boarding { color: #60a5fa; }
+    .status-cargo { color: #fbbf24; }
+    .status-diesel { color: #fb923c; }
+    .status-electric { color: #60a5fa; }
+    .status-steam { color: #a1a1aa; }
 
     /* Sync widget */
     .sync-bar {
@@ -285,7 +289,7 @@
       <input type="text" id="customPlat" placeholder="2" maxlength="1" inputmode="numeric">
     </div>
     <div class="form-row">
-      <label>Status</label>
+      <label id="customStatusLabel">Status</label>
       <select id="customStatus">
         <option value="ON TIME">ON TIME</option>
         <option value="DELAYED">DELAYED</option>
@@ -342,6 +346,14 @@
     <button class="btn btn-secondary" id="btnRefreshOnChange" style="padding:8px 16px;font-size:13px;flex:none;min-width:60px;">Off</button>
   </div>
 
+  <div class="setting-row">
+    <span class="setting-label">Last column</span>
+    <select id="statusMode">
+      <option value="status">Status</option>
+      <option value="type">Type</option>
+    </select>
+  </div>
+
   <h2>Phonics Phases</h2>
   <div class="phase-toggles" id="phaseToggles">
     <button class="phase-btn active" data-phase="phase2">2</button>
@@ -390,6 +402,10 @@
     const STATUS_COLORS = {
       'ON TIME': 'status-on',
       'DELAYED': 'status-delayed',
+      'CARGO': 'status-cargo',
+      'DIESEL': 'status-diesel',
+      'ELECTRIC': 'status-electric',
+      'STEAM': 'status-steam',
     };
 
     // --- Session functions (inline, mirrors js/session.js) ---
@@ -490,6 +506,10 @@
         document.getElementById('autoRefresh').value = s.autoRefreshSeconds;
         document.getElementById('autoRefreshVal').textContent = s.autoRefreshSeconds || 'Off';
       }
+      if (s.statusMode) {
+        document.getElementById('statusMode').value = s.statusMode;
+        updateCustomStatusOptions();
+      }
       if (s.activePhases) {
         document.querySelectorAll('.phase-btn').forEach(btn => {
           btn.classList.toggle('active', s.activePhases.includes(btn.dataset.phase));
@@ -529,12 +549,30 @@
         titleCase: document.getElementById('titleCase').value === 'true',
         suffixChance: parseFloat(document.getElementById('suffixChance').value),
         autoRefreshSeconds: parseInt(document.getElementById('autoRefresh').value),
+        statusMode: document.getElementById('statusMode').value,
         activeDigraphs,
         activeTrigraphs,
         activePhases,
       };
     }
 
+
+    function updateCustomStatusOptions() {
+      const sel = document.getElementById('customStatus');
+      const label = document.getElementById('customStatusLabel');
+      const mode = document.getElementById('statusMode').value;
+      sel.innerHTML = '';
+      if (mode === 'type') {
+        label.textContent = 'Type';
+        ['CARGO', 'DIESEL', 'ELECTRIC', 'STEAM'].forEach(t => {
+          sel.add(new Option(t, t));
+        });
+      } else {
+        label.textContent = 'Status';
+        sel.add(new Option('ON TIME', 'ON TIME'));
+        sel.add(new Option('DELAYED', 'DELAYED'));
+      }
+    }
 
     function pushSettings() {
       send({ type: 'update_settings', settings: gatherSettings() });
@@ -567,6 +605,10 @@
     document.getElementById('clockFormat').addEventListener('change', pushSettings);
     document.getElementById('titleCase').addEventListener('change', pushSettings);
     document.getElementById('suffixChance').addEventListener('change', pushSettings);
+    document.getElementById('statusMode').addEventListener('change', () => {
+      updateCustomStatusOptions();
+      pushSettings();
+    });
 
     document.getElementById('btnSeconds').addEventListener('click', () => {
       const btn = document.getElementById('btnSeconds');
@@ -637,7 +679,10 @@
         document.getElementById('customDest').focus();
         return null;
       }
-      const statusColors = { 'ON TIME': '#4ade80', 'DELAYED': '#fbbf24' };
+      const statusColors = {
+        'ON TIME': '#4ade80', 'DELAYED': '#fbbf24',
+        'CARGO': '#fbbf24', 'DIESEL': '#fb923c', 'ELECTRIC': '#60a5fa', 'STEAM': '#a1a1aa'
+      };
       return { time, destination: dest, platform: plat, status, statusColor: statusColors[status] || '#4ade80' };
     }
 
