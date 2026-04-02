@@ -129,6 +129,30 @@ All settings are controlled from the phone and sent to the display via `update_s
 | autoRefreshSeconds | 0-120 | 0 | Auto-refresh interval (0=off) |
 | maxPlatform | 1-99 | 10 | Maximum platform number |
 
+## Multi-session architecture
+
+The system supports multiple independent sessions, each identified by a user-chosen string. Sessions are implemented through Cloudflare Durable Objects — each session identifier maps to a distinct DO instance via `idFromName(sessionId)`.
+
+### Guest vs named sessions
+
+Guest mode (no identifier) uses `idFromName('default-room')` — all guest users share one session, identical to the original single-session design. Named sessions (any identifier except "default-room") get their own isolated DO with settings persistence.
+
+### Settings persistence
+
+Named sessions store settings in the DO's SQLite database (`CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT)`). On `update_settings`, the DO writes the settings JSON. On new connection, it sends a `restore_settings` message to the connecting client with the stored settings. Guest sessions skip persistence entirely.
+
+### Session routing
+
+The Worker reads `?session=<id>` from the WebSocket URL query parameter, sanitises it (lowercase, `[a-z0-9-]` only, max 40 chars), and routes to the appropriate DO. The session identifier is stored in `localStorage` on the client so it survives page refresh.
+
+### Local server compatibility
+
+`server.py` ignores query parameters — local mode is always single-session with no persistence. The sync UI is hidden when running on localhost or `192.168.*` addresses.
+
+### WebSocket tags and hibernation
+
+The DO uses the Hibernation API's WebSocket tags to distinguish named from guest connections across DO hibernation cycles. Named connections are tagged `['named']`, guest connections `['guest']`. This lets `webSocketMessage` know whether to persist settings without maintaining instance state.
+
 ## Known issues and future work
 
 - Quiz mode (planned): missing letter in destination, child says the word

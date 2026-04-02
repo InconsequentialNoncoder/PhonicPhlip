@@ -36,6 +36,16 @@ chmod +x setup-pi.sh
 
 The Pi auto-starts the server and opens the display in Chromium kiosk mode on boot.
 
+## Sessions
+
+By default the board runs in guest mode — open it and go. For persistent, shareable sessions:
+
+1. Click **Sync** (display page, top-right) or use the session bar (control page)
+2. Enter an identifier (e.g. "smith-family", "classroom-3")
+3. Click **Connect**
+
+Your settings are saved server-side and restored when you reconnect with the same identifier. Multiple devices with the same identifier share one board. Click **Disconnect** to return to guest mode.
+
 ## Keyboard shortcuts
 
 - **Space / Enter / Right arrow** — new departures
@@ -90,6 +100,7 @@ js/Tile.js              Individual tile scramble/flip animation
 js/TileRow.js           Horizontal strip of tiles
 js/SoundEngine.js       Web Audio API mechanical flap sound
 js/flapAudio.js         Base64-encoded audio data
+js/session.js           Session management (localStorage + WebSocket URL building)
 js/main.js              Entry point: display, WebSocket client, keyboard controls
 server.py               Python aiohttp server (local/Pi use)
 setup-pi.sh             Raspberry Pi auto-setup script
