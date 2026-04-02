@@ -14,7 +14,7 @@ export const SCRAMBLE_COLORS = [
 // Departure board layout
 export const DEPARTURE_ROWS = 4;
 export const MAX_DEST_CHARS = 13;
-export const MAX_STATUS_CHARS = 7; // "ON TIME" = 7, "DELAYED" = 7
+export const MAX_STATUS_CHARS = 8; // "ELECTRIC" = 8
 
 // Phases that should never get suffixes (multi-syllable words)
 export const NO_SUFFIX_PHASES = ['phase6a', 'phase6b', 'phase6c'];
@@ -30,6 +30,7 @@ export const DEFAULT_SETTINGS = {
   autoRefreshSeconds: 0,
   maxPlatform: 10,       // max platform number (1–99)
   activePhases: ['phase2', 'phase3', 'phase4'],
+  statusMode: 'status',  // 'status' (ON TIME/DELAYED) or 'type' (train types)
 };
 
 // Phase-gated word bank
@@ -124,4 +125,12 @@ export const DIGRAPH_PATTERNS = ['ch', 'sh', 'th', 'ng', 'ai', 'ee', 'oa', 'oo',
 export const STATUSES = [
   { text: 'ON TIME', weight: 7, color: '#4ade80' },
   { text: 'DELAYED', weight: 3, color: '#fbbf24' },
+];
+
+// Train type options (used when statusMode === 'type')
+export const TRAIN_TYPES = [
+  { text: 'CARGO', color: '#fbbf24' },
+  { text: 'DIESEL', color: '#fb923c' },
+  { text: 'ELECTRIC', color: '#60a5fa' },
+  { text: 'STEAM', color: '#a1a1aa' },
 ];
