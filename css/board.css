@@ -193,76 +193,74 @@ html, body {
 }
 
 /* --- Mobile layout --- */
-@media (max-width: 768px) {
-  #board-container {
-    padding: 2vh 3vw;
-    gap: 3vh;
-  }
+.mobile #board-container {
+  padding: 2vh 3vw;
+  gap: 3vh;
+}
 
-  /* Smaller clock */
-  .clock-digit {
-    width: 14vw;
-    height: 17vw;
-  }
+/* Smaller clock */
+.mobile .clock-digit {
+  width: 14vw;
+  height: 17vw;
+}
 
-  .clock-digit-face span {
-    font-size: 11vw;
-  }
+.mobile .clock-digit-face span {
+  font-size: 11vw;
+}
 
-  .clock-colon {
-    font-size: 9vw;
-    margin: 0 1vw;
-  }
+.mobile .clock-colon {
+  font-size: 9vw;
+  margin: 0 1vw;
+}
 
-  .clock-section {
-    gap: 1.5vw;
-    margin-bottom: 2vh;
-  }
+.mobile .clock-section {
+  gap: 1.5vw;
+  margin-bottom: 2vh;
+}
 
-  /* Only show first 2 departure rows */
-  .departure-row:nth-child(n+3) {
-    display: none;
-  }
+/* Only show first 2 departure rows */
+.mobile .departure-row:nth-child(n+3) {
+  display: none;
+}
 
-  /* Larger tiles for readability */
-  .dep-cell .tile {
-    width: 6vw;
-    height: 10vw;
-  }
+/* Larger tiles for readability */
+.mobile .dep-cell .tile {
+  width: 6vw;
+  height: 10vw;
+}
 
-  .dep-cell .tile-front span,
-  .dep-cell .tile-back span {
-    font-size: 5.5vw;
-  }
+.mobile .dep-cell .tile-front span,
+.mobile .dep-cell .tile-back span {
+  font-size: 5.5vw;
+}
 
-  .dep-plat .tile {
-    width: 7vw;
-    height: 10vw;
-  }
+.mobile .dep-plat .tile {
+  width: 7vw;
+  height: 10vw;
+}
 
-  .dep-plat .tile-front span,
-  .dep-plat .tile-back span {
-    font-size: 6vw;
-  }
+.mobile .dep-plat .tile-front span,
+.mobile .dep-plat .tile-back span {
+  font-size: 6vw;
+}
 
-  /* Tighter cell spacing on mobile */
-  .dep-time {
-    padding-right: 2vw;
-  }
+/* Tighter cell spacing on mobile */
+.mobile .dep-time {
+  padding-right: 2vw;
+}
 
-  .dep-dest {
-    padding-right: 1.5vw;
-  }
+.mobile .dep-dest {
+  padding-right: 1.5vw;
+}
 
-  .dep-plat {
-    padding-right: 2vw;
-  }
+.mobile .dep-plat {
+  padding-right: 2vw;
+}
 
-  .tile-row {
-    gap: 1px;
-  }
+.mobile .tile-row {
+  gap: 1px;
+}
 
-  .departures-body {
-    gap: 2vh;
-  }
+.mobile .departures-body {
+  gap: 2vh;
 }

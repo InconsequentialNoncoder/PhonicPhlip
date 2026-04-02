@@ -157,6 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- Detect mobile device ---
+  const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+  if (isMobile) {
+    document.body.classList.add('mobile');
+  }
+
   // --- Start ---
   applySettings(settings);
   refresh();
