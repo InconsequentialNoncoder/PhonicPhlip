@@ -223,6 +223,16 @@ html, body {
   display: none;
 }
 
+/* Hide status column */
+.mobile .dep-status {
+  display: none;
+}
+
+/* Shorten destination to 9 tiles */
+.mobile .dep-dest .tile:nth-child(n+10) {
+  display: none;
+}
+
 /* Larger tiles for readability */
 .mobile .dep-cell .tile {
   width: 6vw;
