@@ -4,6 +4,10 @@ A split-flap train departure board that teaches phonics. Built for a reception-a
 
 Built on [FlipOff](https://github.com/magnum6actual/flipoff) by magnum6actual (MIT licence).
 
+<img width="1536" height="620" alt="Display board showing split-flap departure board with phonics words" src="https://github.com/user-attachments/assets/57dbdb33-8d34-4fdc-afe7-2b87a1752be8" />
+<img width="513" height="602" alt="Phone control page - settings and phase toggles" src="https://github.com/user-attachments/assets/f8b9c78e-6613-4d61-8cbc-c021572756e3" />
+<img width="517" height="686" alt="Phone control page - digraph and trigraph toggles" src="https://github.com/user-attachments/assets/c8ded701-ef34-4a3f-b31c-18a2d551e239" />
+
 ## What it does
 
 A full-screen split-flap departure board with a ticking clock and four departure rows. Every destination is a strictly decodable word drawn from a bank of ~240 words aligned to the UK Letters and Sounds curriculum (Phases 2–6). Parents toggle phases on or off to match the child's current level, and can enable/disable individual digraphs (14) and trigraphs (4) for fine-grained control over which sounds appear. Single-syllable destinations are optionally extended with decodable suffixes (TOWN, HALT, PARK, etc.) to form compound station names.
