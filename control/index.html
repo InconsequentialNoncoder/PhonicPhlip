@@ -354,6 +354,16 @@
     </select>
   </div>
 
+  <div class="setting-row">
+    <span class="setting-label">Visible rows</span>
+    <div class="phase-toggles" id="rowToggles" style="margin:0;">
+      <button class="phase-btn active" data-row="0">1</button>
+      <button class="phase-btn active" data-row="1">2</button>
+      <button class="phase-btn active" data-row="2">3</button>
+      <button class="phase-btn active" data-row="3">4</button>
+    </div>
+  </div>
+
   <h2>Phonics Phases</h2>
   <div class="phase-toggles" id="phaseToggles">
     <button class="phase-btn active" data-phase="phase2">2</button>
@@ -510,11 +520,15 @@
         document.getElementById('statusMode').value = s.statusMode;
         updateCustomStatusOptions();
       }
+      if (s.visibleRows) {
+        document.querySelectorAll('#rowToggles .phase-btn').forEach((btn, i) => {
+          btn.classList.toggle('active', s.visibleRows[i]);
+        });
+      }
       if (s.activePhases) {
-        document.querySelectorAll('.phase-btn').forEach(btn => {
+        document.querySelectorAll('#phaseToggles .phase-btn').forEach(btn => {
           btn.classList.toggle('active', s.activePhases.includes(btn.dataset.phase));
         });
-  
       }
       if (s.activeDigraphs) {
         document.querySelectorAll('#digraphToggles .digraph-btn').forEach(btn => {
@@ -539,8 +553,12 @@
         activeTrigraphs.push(b.dataset.trigraph);
       });
       const activePhases = [];
-      document.querySelectorAll('.phase-btn.active').forEach(b => {
+      document.querySelectorAll('#phaseToggles .phase-btn.active').forEach(b => {
         activePhases.push(b.dataset.phase);
+      });
+      const visibleRows = [];
+      document.querySelectorAll('#rowToggles .phase-btn').forEach(b => {
+        visibleRows.push(b.classList.contains('active'));
       });
       const secBtn = document.getElementById('btnSeconds');
       return {
@@ -550,6 +568,7 @@
         suffixChance: parseFloat(document.getElementById('suffixChance').value),
         autoRefreshSeconds: parseInt(document.getElementById('autoRefresh').value),
         statusMode: document.getElementById('statusMode').value,
+        visibleRows,
         activeDigraphs,
         activeTrigraphs,
         activePhases,
@@ -624,12 +643,19 @@
     });
     document.getElementById('autoRefresh').addEventListener('change', pushSettings);
 
+    // Row visibility toggles
+    document.getElementById('rowToggles').addEventListener('click', (e) => {
+      const btn = e.target.closest('.phase-btn');
+      if (!btn) return;
+      btn.classList.toggle('active');
+      pushSettings();
+    });
+
     // Phase toggles
     document.getElementById('phaseToggles').addEventListener('click', (e) => {
       const btn = e.target.closest('.phase-btn');
       if (!btn) return;
       btn.classList.toggle('active');
-
       pushSettings();
     });
 
