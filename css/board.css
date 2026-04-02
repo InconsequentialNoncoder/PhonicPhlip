@@ -181,6 +181,89 @@ html, body {
   text-align: center;
 }
 
+/* --- Sync widget --- */
+.sync-widget {
+  position: fixed;
+  top: 10px;
+  right: 32px;
+  z-index: 100;
+}
+
+.sync-btn {
+  background: #2a2a2a;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sync-btn.active {
+  background: #f5c825;
+  color: #111;
+  border-color: #f5c825;
+}
+
+.sync-panel {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 220px;
+}
+
+.sync-panel input {
+  width: 100%;
+  background: #222;
+  color: #f5c825;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.sync-panel input:focus {
+  outline: none;
+  border-color: #f5c825;
+}
+
+.sync-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sync-connect, .sync-disconnect {
+  flex: 1;
+  padding: 6px 12px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sync-connect {
+  background: #f5c825;
+  color: #111;
+  border-color: #f5c825;
+}
+
+.sync-disconnect {
+  background: #2a2a2a;
+  color: #ef4444;
+  border-color: #333;
+}
+
 /* --- Connection indicator --- */
 .connection-indicator {
   position: fixed;

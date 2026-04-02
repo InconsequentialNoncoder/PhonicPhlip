@@ -9,8 +9,11 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/ws') {
-      // Route WebSocket connections to a single shared Durable Object
-      const id = env.RELAY.idFromName('default-room');
+      // Read session identifier from query parameter, sanitise it
+      const raw = url.searchParams.get('session') || '';
+      const sessionId = raw.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40) || 'default-room';
+
+      const id = env.RELAY.idFromName(sessionId);
       const stub = env.RELAY.get(id);
       return stub.fetch(request);
     }

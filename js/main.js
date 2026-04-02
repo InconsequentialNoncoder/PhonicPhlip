@@ -2,6 +2,7 @@ import { DepartureBoard } from './DepartureBoard.js';
 import { SoundEngine } from './SoundEngine.js';
 import { WordBank } from './WordBank.js';
 import { DEFAULT_SETTINGS } from './config.js';
+import { buildWsUrl, getSessionId, setSessionId, sanitiseSessionId, isLocalServer } from './session.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('board-container');
@@ -63,13 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- WebSocket connection ---
   function connectWebSocket() {
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${location.host}/ws`;
+    if (ws) {
+      ws.onclose = null; // prevent auto-reconnect
+      ws.close();
+    }
 
+    const wsUrl = buildWsUrl();
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
       console.log('WebSocket connected');
+      updateConnDot(true);
       // Send current state to any newly connected control pages
       sendToServer({ type: 'board_state', departures: board.departures, settings });
     };
@@ -85,12 +90,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ws.onclose = () => {
       console.log('WebSocket closed, reconnecting in 3s...');
+      updateConnDot(false);
       setTimeout(connectWebSocket, 3000);
     };
 
     ws.onerror = () => {
       ws.close();
     };
+  }
+
+  function updateConnDot(connected) {
+    const dot = document.getElementById('conn-dot');
+    if (dot) dot.classList.toggle('connected', connected);
   }
 
   function sendToServer(msg) {
@@ -112,6 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       case 'update_settings':
         applySettings(msg.settings);
+        break;
+
+      case 'restore_settings':
+        // Server-side settings restored for a named session
+        applySettings(msg.settings);
+        refresh();
         break;
 
       case 'request_state':
@@ -158,13 +175,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Detect mobile device ---
-  // Safari on iPad reports as "Macintosh" in user agent, so also check
-  // for touch capability with small-ish screen as fallback
   const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     || ('ontouchstart' in window && window.innerWidth < 1200)
     || (navigator.maxTouchPoints > 1 && navigator.platform === 'MacIntel');
   if (isMobile) {
     document.body.classList.add('mobile');
+  }
+
+  // --- Sync button ---
+  if (!isLocalServer()) {
+    initSyncButton(connectWebSocket);
   }
 
   // --- Start ---
@@ -173,3 +193,57 @@ document.addEventListener('DOMContentLoaded', () => {
   startAutoRefresh();
   connectWebSocket();
 });
+
+// --- Sync button UI ---
+function initSyncButton(reconnect) {
+  const currentSession = getSessionId();
+
+  const widget = document.createElement('div');
+  widget.className = 'sync-widget';
+  widget.innerHTML = `
+    <button class="sync-btn ${currentSession ? 'active' : ''}" id="syncBtn">
+      ${currentSession || 'Sync'}
+    </button>
+    <div class="sync-panel" id="syncPanel" style="display:none;">
+      <input type="text" id="syncInput" placeholder="e.g. smith-family"
+        maxlength="40" value="${currentSession || ''}">
+      <div class="sync-actions">
+        <button class="sync-connect" id="syncConnect">Connect</button>
+        <button class="sync-disconnect" id="syncDisconnect"
+          style="display:${currentSession ? 'block' : 'none'}">Disconnect</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(widget);
+
+  const btn = document.getElementById('syncBtn');
+  const panel = document.getElementById('syncPanel');
+  const input = document.getElementById('syncInput');
+  const connectBtn = document.getElementById('syncConnect');
+  const disconnectBtn = document.getElementById('syncDisconnect');
+
+  btn.addEventListener('click', () => {
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+
+  connectBtn.addEventListener('click', () => {
+    const id = sanitiseSessionId(input.value);
+    if (!id) return;
+    setSessionId(id);
+    btn.textContent = id;
+    btn.classList.add('active');
+    disconnectBtn.style.display = 'block';
+    panel.style.display = 'none';
+    reconnect();
+  });
+
+  disconnectBtn.addEventListener('click', () => {
+    setSessionId(null);
+    btn.textContent = 'Sync';
+    btn.classList.remove('active');
+    input.value = '';
+    disconnectBtn.style.display = 'none';
+    panel.style.display = 'none';
+    reconnect();
+  });
+}

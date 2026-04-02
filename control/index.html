@@ -198,10 +198,70 @@
     .status-on { color: #4ade80; }
     .status-delayed { color: #fbbf24; }
     .status-boarding { color: #60a5fa; }
+
+    /* Sync widget */
+    .sync-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      border: 1px solid #222;
+    }
+    .sync-bar input {
+      flex: 1;
+      background: #222;
+      color: #f5c825;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+    }
+    .sync-bar input:focus {
+      outline: none;
+      border-color: #f5c825;
+    }
+    .sync-bar input::placeholder {
+      color: #555;
+    }
+    .sync-bar button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .sync-bar .sync-connect {
+      background: #f5c825;
+      color: #111;
+      border-color: #f5c825;
+    }
+    .sync-bar .sync-disconnect {
+      background: #2a2a2a;
+      color: #ef4444;
+      border-color: #333;
+    }
+    .sync-label {
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
   <h1><span class="conn-status" id="connDot"></span> Board Control</h1>
+
+  <div class="sync-bar" id="syncBar" style="display:none;">
+    <span class="sync-label">Session:</span>
+    <input type="text" id="syncInput" placeholder="e.g. smith-family" maxlength="40">
+    <button class="sync-connect" id="syncConnect">Connect</button>
+    <button class="sync-disconnect" id="syncDisconnect" style="display:none;">Leave</button>
+  </div>
 
   <div class="actions">
     <button class="btn btn-primary" id="btnRefresh">New Departures</button>
@@ -332,10 +392,33 @@
       'DELAYED': 'status-delayed',
     };
 
+    // --- Session functions (inline, mirrors js/session.js) ---
+    const STORAGE_KEY = 'phonic-session';
+    function getSessionId() {
+      try { return localStorage.getItem(STORAGE_KEY) || null; } catch(e) { return null; }
+    }
+    function setSessionId(id) {
+      try { if (id) localStorage.setItem(STORAGE_KEY, id); else localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    }
+    function sanitiseSessionId(raw) {
+      return raw.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
+    }
+    function isLocalServer() {
+      const h = location.hostname;
+      return h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.');
+    }
+    function buildWsUrl() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      let url = `${protocol}//${location.host}/ws`;
+      const session = getSessionId();
+      if (session && !isLocalServer()) url += `?session=${encodeURIComponent(session)}`;
+      return url;
+    }
+
     // --- WebSocket ---
     function connect() {
-      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      ws = new WebSocket(`${protocol}//${location.host}/ws`);
+      if (ws) { ws.onclose = null; ws.close(); }
+      ws = new WebSocket(buildWsUrl());
 
       ws.onopen = () => {
         document.getElementById('connDot').classList.add('ok');
@@ -348,6 +431,8 @@
           if (msg.type === 'board_state') {
             currentDepartures = msg.departures || [];
             renderCurrentBoard();
+            if (msg.settings) syncSettings(msg.settings);
+          } else if (msg.type === 'restore_settings') {
             if (msg.settings) syncSettings(msg.settings);
           }
         } catch (err) {}
@@ -554,6 +639,37 @@
       }
       const statusColors = { 'ON TIME': '#4ade80', 'DELAYED': '#fbbf24' };
       return { time, destination: dest, platform: plat, status, statusColor: statusColors[status] || '#4ade80' };
+    }
+
+    // --- Sync bar ---
+    if (!isLocalServer()) {
+      const syncBar = document.getElementById('syncBar');
+      const syncInput = document.getElementById('syncInput');
+      const syncConnect = document.getElementById('syncConnect');
+      const syncDisconnect = document.getElementById('syncDisconnect');
+      syncBar.style.display = 'flex';
+
+      const existing = getSessionId();
+      if (existing) {
+        syncInput.value = existing;
+        syncDisconnect.style.display = 'block';
+      }
+
+      syncConnect.addEventListener('click', () => {
+        const id = sanitiseSessionId(syncInput.value);
+        if (!id) return;
+        setSessionId(id);
+        syncInput.value = id;
+        syncDisconnect.style.display = 'block';
+        connect();
+      });
+
+      syncDisconnect.addEventListener('click', () => {
+        setSessionId(null);
+        syncInput.value = '';
+        syncDisconnect.style.display = 'none';
+        connect();
+      });
     }
 
     // --- Start ---
