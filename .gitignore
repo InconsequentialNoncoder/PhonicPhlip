@@ -4,3 +4,11 @@ __pycache__/
 CLAUDE.md
 node_modules/
 .wrangler/
+
+# birdsong-mix tool: generated audio + caches stay local
+tools/birdsong-mix/cache/
+tools/birdsong-mix/build/
+tools/birdsong-mix/input/birds/*
+tools/birdsong-mix/input/ambience/*
+tools/birdsong-mix/input/classical/*
+!tools/birdsong-mix/input/**/.gitkeep

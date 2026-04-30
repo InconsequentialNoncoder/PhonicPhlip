@@ -1,0 +1,69 @@
+seed: 42
+duration_s: 3600
+sample_rate: 44100
+bitrate_kbps: 128
+
+# integrated loudness target (LUFS) and true-peak ceiling (dBTP)
+loudnorm:
+  i: -20
+  tp: -1.5
+  lra: 11
+
+# whitelist of acceptable source-file licenses
+license_whitelist:
+  - CC0
+  - PDM
+  - CC-BY-4.0
+  - CC-BY-SA-4.0
+
+# layer-specific knobs
+ambience:
+  # forest bed plays continuously; if the source is shorter than duration_s
+  # ffmpeg's aloop will tile it. one or two long files is plenty.
+  gain_db: -3
+  fade_in_s: 12
+  fade_out_s: 18
+
+classical:
+  # sparse blocks separated by silent gaps. all numbers are seconds.
+  block_min_s: 120
+  block_max_s: 240
+  gap_min_s: 180
+  gap_max_s: 480
+  gain_db: -10
+  fade_in_s: 20
+  fade_out_s: 30
+  duck_under_birds: false  # sidechain duck classical when birds play
+
+birds:
+  # event count window across the hour. arrange.py picks a count in this range.
+  event_count_min: 40
+  event_count_max: 90
+  # per-event gain jitter (dB) around 0
+  gain_jitter_db: 3
+  # stereo pan range (-1 hard left .. 1 hard right)
+  pan_range: 0.7
+  fade_in_s: 4
+  fade_out_s: 6
+
+# xeno-canto species list. arrange.py rotates through these.
+# common UK garden / woodland birds; tweak freely.
+species:
+  - "Erithacus rubecula"        # robin
+  - "Turdus merula"             # blackbird
+  - "Troglodytes troglodytes"   # wren
+  - "Fringilla coelebs"         # chaffinch
+  - "Parus major"               # great tit
+  - "Cyanistes caeruleus"       # blue tit
+  - "Sylvia atricapilla"        # blackcap
+  - "Phylloscopus collybita"    # chiffchaff
+  - "Turdus philomelos"         # song thrush
+  - "Prunella modularis"        # dunnock
+
+# fetch knobs
+fetch:
+  xeno_canto_per_species: 4
+  xeno_canto_min_quality: "B"   # A is best, E is worst; accept A and B
+  freesound_ambience_count: 2
+  freesound_ambience_min_duration_s: 300
+  freesound_birds_fallback_count: 12
